@@ -112,19 +112,19 @@
       --color-border: oklch(0.274 0.006 286.033);
       --color-input: oklch(0.274 0.006 286.033);
       --color-ring: oklch(0.442 0.017 285.786);
-    --color-chart-1: oklch(0.488 0.243 264.376);
-    --color-chart-2: oklch(0.696 0.17 162.48);
-    --color-chart-3: oklch(0.769 0.188 70.08);
-    --color-chart-4: oklch(0.627 0.265 303.9);
-    --color-chart-5: oklch(0.645 0.246 16.439);
-    --color-sidebar: oklch(0.205 0 0);
-    --color-sidebar-foreground: oklch(0.985 0 0);
-    --color-sidebar-primary: oklch(0.488 0.243 264.376);
-    --color-sidebar-primary-foreground: oklch(0.985 0 0);
-    --color-sidebar-accent: oklch(0.269 0 0);
-    --color-sidebar-accent-foreground: oklch(0.985 0 0);
-    --color-sidebar-border: oklch(0.274 0.006 286.033);
-    --color-sidebar-ring: oklch(0.442 0.017 285.786);
+      --color-chart-1: oklch(0.488 0.243 264.376);
+      --color-chart-2: oklch(0.696 0.17 162.48);
+      --color-chart-3: oklch(0.769 0.188 70.08);
+      --color-chart-4: oklch(0.627 0.265 303.9);
+      --color-chart-5: oklch(0.645 0.246 16.439);
+      --color-sidebar: oklch(0.205 0 0);
+      --color-sidebar-foreground: oklch(0.985 0 0);
+      --color-sidebar-primary: oklch(0.488 0.243 264.376);
+      --color-sidebar-primary-foreground: oklch(0.985 0 0);
+      --color-sidebar-accent: oklch(0.269 0 0);
+      --color-sidebar-accent-foreground: oklch(0.985 0 0);
+      --color-sidebar-border: oklch(0.274 0.006 286.033);
+      --color-sidebar-ring: oklch(0.442 0.017 285.786);
   }
 }
 
@@ -159,9 +159,9 @@ body {
 
 html {
   font-size: 62.5%;
-}
+} */
 
-body {
+/* body {
   font-family: "Poppins", sans-serif;
   color: var(--color-grey-700);
 
@@ -169,9 +169,9 @@ body {
   min-height: 100vh;
   line-height: 1.5;
   font-size: 1.6rem;
-}
+} */
 
-input,
+/* input,
 button,
 textarea,
 select {
@@ -229,7 +229,8 @@ img {
   max-width: 100%;
 
   filter: grayscale(var(--image-grayscale)) opacity(var(--image-opacity));
-}
+} */
+
 
 @keyframes spin-custom {
   to {
@@ -247,4 +248,4 @@ img {
     conic-gradient(#0000 30%, var(--color-brand-600));
   -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 10px), #000 0);
   animation: spin-custom 1.5s infinite linear;
-} */
+}
