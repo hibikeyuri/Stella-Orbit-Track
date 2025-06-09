@@ -1,14 +1,15 @@
 import { Table } from "../../components/Table";
 import Spinner from "../../components/Spinner";
-import { getSatellites } from "../../services/apiSatellites";
-import { useQuery } from "@tanstack/react-query";
+import { deleteSatellites, getSatellites } from "../../services/apiSatellites";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import React from "react";
 import { Button } from "@/ui/button";
-import { Satellite } from 'lucide-react';
+import { AlertTriangle, Satellite } from "lucide-react";
+import toast from "react-hot-toast";
 
 const columnstyle =
-  "grid-cols-[0.6fr_0.8fr_0.8fr_0.6fr_1.2fr_2fr_2fr_0.5fr] min-w-[1400px] px-4 py-2";
+  "grid-cols-[0.6fr_0.8fr_0.8fr_0.6fr_1.2fr_2fr_2fr_0.5fr_0.5fr] min-w-[1400px] px-4 py-2";
 
 function TableHeader({ children, className }) {
   return (
@@ -32,6 +33,22 @@ function SatelliteTable() {
     queryFn: getSatellites,
   });
 
+  const queryClient = useQueryClient();
+
+  // const showToast = useToast();
+
+  const { isLoading: isDeleting, mutate } = useMutation({
+    mutationFn: deleteSatellites,
+    onSuccess: () => {
+      toast.success("Satellite successfully deleted!");
+
+      queryClient.invalidateQueries({
+        queryKey: ["satellites"],
+      });
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
   if (error) return;
   if (isLoading) return <Spinner />;
 
@@ -45,7 +62,8 @@ function SatelliteTable() {
       <div>TLE</div>
       <div>line1</div>
       <div>line2</div>
-      <div>is_active</div>
+      <div>active</div>
+      <div>operation</div>
     </TableHeader>
   );
 
@@ -59,7 +77,7 @@ function SatelliteTable() {
       //   alt={satellite.name}
       //   className="h-8 w-8 object-contain"
       // />,
-      <Satellite></Satellite>,
+      <Satellite key={`img-${satellite.id}`}></Satellite>,
       <div key={`id-${satellite.id}`}>{satellite.norad_id}</div>,
       <div key={`name-${satellite.id}`}>{satellite.name}</div>,
       <div key={`cat-${satellite.id}`}>{satellite.category}</div>,
@@ -68,13 +86,27 @@ function SatelliteTable() {
       <div key={`line2-${satellite.id}`}>{satellite.line2}</div>,
       <div key={`active-${satellite.id}`}>
         {satellite.is_active ? (
-          <Button className="bg-green-700 pointer-events-none rounded-full" size="sm">
-            <span>active</span></Button>
+          <Button
+            className="pointer-events-none rounded-full bg-green-700"
+            size="sm"
+          >
+            <span>active</span>
+          </Button>
         ) : (
           <Button variant="outline" className="rounded-full bg-red-700">
             offline
           </Button>
         )}
+      </div>,
+      <div key={`option-${satellite.id}`}>
+        <Button
+          size="sm"
+          variant="destructive"
+          onClick={() => mutate(satellite.id)}
+          disabled={isDeleting}
+        >
+          Delete
+        </Button>
       </div>,
     ];
   });
