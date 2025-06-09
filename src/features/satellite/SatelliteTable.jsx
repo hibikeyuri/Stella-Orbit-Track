@@ -6,7 +6,10 @@ import clsx from "clsx";
 import React from "react";
 import { Button } from "@/ui/button";
 import { AlertTriangle, Satellite } from "lucide-react";
-import toast from "react-hot-toast";
+// import toast from "react-hot-toast";
+
+import { useRef } from "react";
+import ToastModal from "@/components/ToastModal";
 
 const columnstyle =
   "grid-cols-[0.6fr_0.8fr_0.8fr_0.6fr_1.2fr_2fr_2fr_0.5fr_0.5fr] min-w-[1400px] px-4 py-2";
@@ -35,18 +38,35 @@ function SatelliteTable() {
 
   const queryClient = useQueryClient();
 
-  // const showToast = useToast();
+  const toastRef = useRef();
+
+  const showSuccess = () => {
+    console.log(toastRef.current);
+    toastRef.current?.openToast({
+      title: "Satellite successfully deleted!",
+      description: "request is completed",
+      type: "success",
+    });
+  };
+
+  const showError = (err) => {
+    toastRef.current?.openToast({
+      title: err.message,
+      description: "error",
+      type: "error",
+    });
+  };
 
   const { isLoading: isDeleting, mutate } = useMutation({
     mutationFn: deleteSatellites,
     onSuccess: () => {
-      toast.success("Satellite successfully deleted!");
-
+      // toast.success("Satellite successfully deleted!");
+      showSuccess();
       queryClient.invalidateQueries({
         queryKey: ["satellites"],
       });
     },
-    onError: (err) => toast.error(err.message),
+    onError: (err) => showError(err.message),
   });
 
   if (error) return;
@@ -93,7 +113,7 @@ function SatelliteTable() {
             <span>active</span>
           </Button>
         ) : (
-          <Button variant="outline" className="rounded-full bg-red-700">
+          <Button className="pointer-events-none rounded-full bg-red-700" size="sm">
             offline
           </Button>
         )}
@@ -107,17 +127,29 @@ function SatelliteTable() {
         >
           Delete
         </Button>
+        {/* <ToastModal ref={toastRef}>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => aler()}
+            disabled={isDeleting}
+          >
+            Delete
+          </Button>
+        </ToastModal> */}
       </div>,
     ];
   });
 
   return (
-    <Table
-      role="table"
-      rows={rows}
-      header={headerContent}
-      className={columnstyle}
-    ></Table>
+    <ToastModal ref={toastRef}>
+      <Table
+        role="table"
+        rows={rows}
+        header={headerContent}
+        className={columnstyle}
+      ></Table>
+    </ToastModal>
   );
 }
 
