@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CircleCheckIcon, XIcon } from "lucide-react";
+import { CircleCheckIcon, CircleXIcon, XIcon } from "lucide-react";
 
 import { Button } from "@/ui/button";
 import {
@@ -11,14 +11,10 @@ import {
   ToastTitle,
   ToastViewport,
 } from "@/ui/toast";
-import { useToast } from "./ToastContext";
+import { forwardRef, useImperativeHandle } from "react";
+import { Description } from "@radix-ui/react-toast";
 
-// Custom React Hook
-function useProgressTimer({
-  duration,
-  interval = 100,
-  onComplete,
-}) {
+function useProgressTimer({ duration, interval = 100, onComplete }) {
   const [progress, setProgress] = useState(duration);
   const timerRef = useRef(0);
   const timerState = useRef({
@@ -65,7 +61,7 @@ function useProgressTimer({
       cleanup();
       state.remaining = Math.max(
         0,
-        state.remaining - (Date.now() - state.startTime)
+        state.remaining - (Date.now() - state.startTime),
       );
       state.isPaused = true;
     }
@@ -91,50 +87,98 @@ function useProgressTimer({
   };
 }
 
-export default function ToastModal({ children }) {
-  const { toastState, setToastState } = useToast();
+const ToastModal = forwardRef((props, ref) => {
+  const { children } = props;
+  const [open, setOpen] = useState(false);
+  const [toastData, setToastData] = useState({
+    title: "",
+    description: "",
+    type: "success",
+  });
+
   const toastDuration = 5000;
   const { progress, start, pause, resume, reset } = useProgressTimer({
     duration: toastDuration,
-    onComplete: () => setToastState({ open: false, title: "", description: "" }),
+    onComplete: () => setOpen(false),
   });
 
   const handleOpenChange = useCallback(
     (isOpen) => {
-      setToastState({ open: isOpen, title: toastState.title, description: toastState.description });
+      setOpen(isOpen);
       if (isOpen) {
         reset();
         start();
       }
     },
-    [reset, start, setToastState, toastState.title, toastState.description]
+    [reset, start],
   );
 
+  const triggerToast = useCallback(
+    ({ title, description, type = "success" }) => {
+      setToastData({ title, description, type });
+      if (open) {
+        setOpen(false);
+        // Wait for the close animation to finish
+        window.setTimeout(() => {
+          handleOpenChange(true);
+        }, 150);
+      } else {
+        handleOpenChange(true);
+      }
+    },
+    [open, handleOpenChange],
+  );
+
+  useImperativeHandle(ref, () => ({
+    openToast: triggerToast,
+  }));
+
+  const iconMap = {
+    success: {
+      icon: (
+        <CircleCheckIcon
+          className="mt-0.5 shrink-0 text-emerald-500"
+          size={16}
+          aria-hidden="true"
+        />
+      ),
+      color: "bg-emerald-500",
+    },
+    error: {
+      icon: <CircleXIcon className="mt-0.5 shrink-0 text-red-500" size={16} />,
+      color: "bg-red-500",
+    },
+  };
+
+  const currentIcon = iconMap[toastData.type]?.icon;
+  const currentBarColor = iconMap[toastData.type]?.color;
+
   return (
-    <ToastProvider swipeDirection="left">
+    <ToastProvider swipeDirection="left" children>
+      {/* <Button variant="outline" onClick={handleButtonClick}>
+        Custom toast
+      </Button> */}
       {children}
       <Toast
-        open={toastState.open}
+        open={open}
         onOpenChange={handleOpenChange}
         onPause={pause}
         onResume={resume}
       >
         <div className="flex w-full justify-between gap-3">
-          <CircleCheckIcon
-            className="mt-0.5 shrink-0 text-emerald-500"
-            size={16}
-            aria-hidden="true"
-          />
+          {currentIcon}
           <div className="flex grow flex-col gap-3">
             <div className="space-y-1">
-              <ToastTitle>{toastState.title}</ToastTitle>
-              <ToastDescription>{toastState.description}</ToastDescription>
+              <ToastTitle>{toastData.title}</ToastTitle>
+              <ToastDescription>{toastData.description}</ToastDescription>
             </div>
-            <div>
-              <ToastAction altText="Undo changes" asChild>
-                <Button size="sm">Undo changes</Button>
-              </ToastAction>
-            </div>
+            {toastData.type === "success" ? (
+              <div>
+                <ToastAction altText="Undo changes" asChild>
+                  <Button size="sm">Undo</Button>
+                </ToastAction>
+              </div>
+            ) : null}
           </div>
           <ToastClose asChild>
             <Button
@@ -152,7 +196,7 @@ export default function ToastModal({ children }) {
         </div>
         <div className="contents" aria-hidden="true">
           <div
-            className="pointer-events-none absolute bottom-0 left-0 h-1 w-full bg-emerald-500"
+            className={`pointer-events-none absolute bottom-0 left-0 h-1 w-full ${currentBarColor}`}
             style={{
               width: `${(progress / toastDuration) * 100}%`,
               transition: "width 100ms linear",
@@ -163,4 +207,6 @@ export default function ToastModal({ children }) {
       <ToastViewport className="sm:right-auto sm:left-0" />
     </ToastProvider>
   );
-}
+});
+
+export default ToastModal;

@@ -23,7 +23,7 @@ function AppLayout() {
           "overflow-x-auto",
         )}
       >
-          <Outlet />
+        <Outlet />
       </main>
     </div>
   );
