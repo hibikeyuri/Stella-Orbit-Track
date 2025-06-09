@@ -19,11 +19,11 @@ function AppLayout() {
         className={clsx(
           "bg-gray-50",
           "px-12 py-16", // padding: 4rem 4.8rem 6.4rem
-          "pb-[6.4rem]",// bottom padding手動補上
+          "pb-[6.4rem]", // bottom padding手動補上
           "overflow-x-auto",
         )}
       >
-        <Outlet />
+          <Outlet />
       </main>
     </div>
   );
