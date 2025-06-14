@@ -13,16 +13,30 @@ export async function getSatellites() {
   return satellites;
 }
 
+export async function createSatellites(satellite) {
+  const { data: satellites, error } = await supabase
+    .from("satellites")
+    .insert([satellite])
+    .select();
+
+  if (error) {
+    console.error(error);
+    throw new Error("Satellite cound not be created");
+  }
+
+  return satellites;
+}
+
 export async function deleteSatellites(id) {
   const { data: satellites, error } = await supabase
     .from("satellites")
     .delete()
     .eq("id", id);
-  
+
   if (error) {
     console.error(error);
     throw new Error("Satellite cound not be deleted");
   }
-  
+
   return satellites;
 }

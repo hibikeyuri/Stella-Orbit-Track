@@ -87,7 +87,7 @@ function SatelliteTable() {
     </TableHeader>
   );
 
-  console.log(satellites);
+  // console.log(satellites);
 
   const rows = satellites.map((satellite) => {
     return [
