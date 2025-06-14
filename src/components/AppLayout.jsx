@@ -3,6 +3,12 @@ import clsx from "clsx";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 
+function Container({children}) {
+  return (
+    <div className="mx-auto max-w-[120rem] px-4 flex flex-col">{children}</div>
+  );
+}
+
 function AppLayout() {
   return (
     <div
@@ -18,12 +24,14 @@ function AppLayout() {
       <main
         className={clsx(
           "bg-gray-50",
-          "px-12 py-16", // padding: 4rem 4.8rem 6.4rem
-          "pb-[6.4rem]", // bottom padding手動補上
+          "px-12 py-16",
+          "pb-[6.4rem]",
           "overflow-x-auto",
         )}
       >
-        <Outlet />
+        <Container>
+          <Outlet />
+        </Container>
       </main>
     </div>
   );
