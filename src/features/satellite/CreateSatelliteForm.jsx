@@ -10,19 +10,32 @@ import { useRef } from "react";
 import { useForm } from "react-hook-form";
 
 import ToastModal from "@/components/ToastModal";
+import { formatDateTimeLocalUTC } from "@/lib/utils";
 
-function CreateSatelliteForm() {
+function CreateSatelliteForm({ satelliteToEdit = {} }) {
+  const { id: editId, date: sourceDate, ...editValues } = satelliteToEdit;
+  // console.log(sourceDate);
+  // console.log(formatDateTimeLocalUTC(sourceDate));
+  const isEditSession = Boolean(editId);
+
   const queryClient = useQueryClient();
 
   const toastRef = useRef();
 
-  const showSuccess = () => {
+  const createInfo = {
+    title: "Satellite successfully Created!",
+    description: "request is completed",
+    type: "success",
+  };
+
+  const editInfo = {
+    title: "Satellite successfully Edited!",
+    description: "request is completed",
+    type: "success",
+  };
+  const showSuccess = (info) => {
     console.log(toastRef.current);
-    toastRef.current?.openToast({
-      title: "Satellite successfully created!",
-      description: "request is completed",
-      type: "success",
-    });
+    toastRef.current?.openToast(info);
   };
 
   const showError = (err) => {
@@ -33,10 +46,10 @@ function CreateSatelliteForm() {
     });
   };
 
-  const { mutate, isLoading: isCreating } = useMutation({
+  const { mutate: createSatellite, isLoading: isCreating } = useMutation({
     mutationFn: createSatellites,
     onSuccess: () => {
-      showSuccess();
+      showSuccess(createInfo);
       queryClient.invalidateQueries({ queryKey: ["satellites"] });
       reset();
     },
@@ -45,12 +58,33 @@ function CreateSatelliteForm() {
     },
   });
 
-  const { register, handleSubmit, reset, formState } = useForm();
+  const { mutate: editSatellite, isLoading: isEditing } = useMutation({
+    mutationFn: ({ satelliteData, id }) => createSatellites(satelliteData, id),
+    onSuccess: () => {
+      showSuccess(editInfo);
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["satellites"] });
+      }, 5000);
+      reset();
+    },
+    onError: (err) => {
+      showError(err);
+    },
+  });
+
+  const isWorking = isCreating || isEditing;
+
+  const { register, handleSubmit, reset, formState } = useForm({
+    defaultValues: isEditSession
+      ? { ...editValues, id: editId, date: formatDateTimeLocalUTC(sourceDate) }
+      : {},
+  });
   const { errors } = formState;
   console.log(errors);
   function onSubmit(data) {
-    mutate(data);
-    // console.log(data);
+    if (isEditSession) editSatellite({ satelliteData: data, id: editId });
+    else createSatellite(data);
+    console.log(data);
   }
 
   function onError(err) {
@@ -156,7 +190,7 @@ function CreateSatelliteForm() {
           <Button type="reset" variant="secondary" size="lg">
             Cancel
           </Button>
-          <Button size="lg" type="submit" disabled={isCreating}>
+          <Button size="lg" type="submit" disabled={isWorking}>
             Add Satellite
           </Button>
         </FormRow>

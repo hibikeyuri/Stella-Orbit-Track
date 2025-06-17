@@ -3,13 +3,14 @@ import Spinner from "../../components/Spinner";
 import { deleteSatellites, getSatellites } from "../../services/apiSatellites";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/ui/button";
 import { AlertTriangle, Satellite } from "lucide-react";
 // import toast from "react-hot-toast";
 
 import { useRef } from "react";
 import ToastModal from "@/components/ToastModal";
+import CreateSatelliteForm from "./CreateSatelliteForm";
 
 const columnstyle =
   "grid-cols-[0.6fr_0.8fr_0.8fr_0.6fr_1.2fr_2fr_2fr_0.5fr_0.5fr] min-w-[1400px] px-4 py-2";
@@ -27,6 +28,8 @@ function TableHeader({ children, className }) {
   );
 }
 function SatelliteTable() {
+  const [editingId, setEditingId] = useState(null);
+
   const {
     data: satellites,
     isLoading,
@@ -89,15 +92,17 @@ function SatelliteTable() {
 
   // console.log(satellites);
 
-  const rows = satellites.map((satellite) => {
-    return [
+  const rows = satellites.flatMap((satellite) => {
+    // console.log(satellite);
+    const isEditing = editingId === satellite.id;
+    const mainRow = [
       // <img
       //   key={`img-${satellite.id}`}
       //   src="/"
       //   alt={satellite.name}
       //   className="h-8 w-8 object-contain"
       // />,
-      <Satellite key={`img-${satellite.id}`}></Satellite>,
+      <Satellite key={`img-${satellite.id}`}>{satellite.id}</Satellite>,
       <div key={`id-${satellite.id}`}>{satellite.norad_id}</div>,
       <div key={`name-${satellite.id}`}>{satellite.name}</div>,
       <div key={`cat-${satellite.id}`}>{satellite.category}</div>,
@@ -113,7 +118,10 @@ function SatelliteTable() {
             <span>active</span>
           </Button>
         ) : (
-          <Button className="pointer-events-none rounded-full bg-red-700" size="sm">
+          <Button
+            className="pointer-events-none rounded-full bg-red-700"
+            size="sm"
+          >
             offline
           </Button>
         )}
@@ -127,6 +135,13 @@ function SatelliteTable() {
         >
           Delete
         </Button>
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={() => setEditingId((id) => (id === satellite.id ? null : satellite.id))}
+        >
+          {isEditing ? "Close" : "Edit"}
+        </Button>
         {/* <ToastModal ref={toastRef}>
           <Button
             size="sm"
@@ -139,7 +154,12 @@ function SatelliteTable() {
         </ToastModal> */}
       </div>,
     ];
+
+    const editRow = [<div className="col-span-full" key={`edit-${satellite.id}`}><CreateSatelliteForm satelliteToEdit={satellite}></CreateSatelliteForm></div>];
+
+    return isEditing ? [mainRow, editRow] : [mainRow];
   });
+
 
   return (
     <ToastModal ref={toastRef}>
