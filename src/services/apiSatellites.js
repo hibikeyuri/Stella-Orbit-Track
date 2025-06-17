@@ -13,11 +13,17 @@ export async function getSatellites() {
   return satellites;
 }
 
-export async function createSatellites(satellite) {
-  const { data: satellites, error } = await supabase
-    .from("satellites")
-    .insert([satellite])
-    .select();
+export async function createSatellites(satellite, id) {
+  let query = supabase.from("satellites");
+  console.log(satellite);
+  if (!id) query = query.insert([satellite]);
+
+  if (id) {
+    console.log("OKOK");
+    query = query.update({...satellite}).eq("id", id);
+  }
+
+  const { data: satellites, error } = await query.select();
 
   if (error) {
     console.error(error);
