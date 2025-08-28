@@ -5,7 +5,7 @@ function Settings() {
   return (
     <>
       <Row>
-        <Heading as="h1">Satellites</Heading>
+        <Heading as="h1">Settings</Heading>
       </Row>
     </>
   );
