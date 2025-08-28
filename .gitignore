@@ -23,6 +23,13 @@ dist-ssr
 *.sln
 *.sw?
 
+# Reference Resource
 final-*
 final-*/**
 *Example*
+
+# Python
+venv/
+venv/*
+**/__pycache__/
+backend/

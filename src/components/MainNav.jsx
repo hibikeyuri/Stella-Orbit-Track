@@ -14,7 +14,7 @@ function Span({ isActive = false, className = "", children }) {
 
 function MainNav() {
   const links = [
-    { to: "/dashboard", icon: "X", label: "Home" },
+    { to: "/dashboard", icon: "X", label: "Dashboard" },
     { to: "/satellites", icon: "X", label: "Satellites" },
     { to: "/users", icon: "X", label: "Users" },
     { to: "/settings", icon: "X", label: "Settings" },
