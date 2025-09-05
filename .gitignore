@@ -33,3 +33,4 @@ venv/
 venv/*
 **/__pycache__/
 backend/
+backend/*
