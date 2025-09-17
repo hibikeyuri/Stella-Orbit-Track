@@ -9,7 +9,10 @@ export function ToastProvider({ children }) {
     description: "",
   });
 
-  const showToast = ({ title = "Your request was completed!", description = "It demonstrates that the task or request has been processed." } = {}) => {
+  const showToast = ({
+    title = "Your request was completed!",
+    description = "It demonstrates that the task or request has been processed.",
+  } = {}) => {
     setToastState({ open: true, title, description });
     console.log("TEST");
   };

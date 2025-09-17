@@ -1,4 +1,8 @@
 import { Satellite, Eye, Clock, Check, X, Zap } from "lucide-react";
+
+import SatelliteView from "./SatelliteView";
+
+import { Button } from "@/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -7,9 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/ui/dialog";
-import { Button } from "@/ui/button";
-
-import SatelliteView from "./SatelliteView";
 
 const statusColors = {
   never: "bg-gray-400",
@@ -35,26 +36,26 @@ export default function SatelliteCard({ satellite }) {
   const statusColor = statusColors[latestStatus];
 
   return (
-    <div className="bg-white shadow-md rounded-xl p-4 flex flex-col gap-4 w-full max-w-lg">
+    <div className="flex w-full max-w-lg flex-col gap-4 rounded-xl bg-white p-4 shadow-md">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <div className="bg-gray-200 flex h-16 w-16 items-center justify-center rounded-xl">
+        <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gray-200">
           <Satellite size={32} />
         </div>
         <div>
-          <p className="text-gray-500 text-sm">Satellite</p>
-          <p className="font-medium text-lg">{satellite.name}</p>
+          <p className="text-sm text-gray-500">Satellite</p>
+          <p className="text-lg font-medium">{satellite.name}</p>
         </div>
       </div>
 
       {/* Timeline */}
-      <div className="flex items-center space-x-4 rounded-xl p-4 bg-gray-100 relative">
-        <div className="absolute left-[80px] top-0 bottom-0 w-0.5 bg-gray-300" />
+      <div className="relative flex items-center space-x-4 rounded-xl bg-gray-100 p-4">
+        <div className="absolute top-0 bottom-0 left-[80px] w-0.5 bg-gray-300" />
         <div
           data-line
-          className={`absolute left-[80px] top-[24px] bottom-0 w-0.5 ${statusColor}`}
+          className={`absolute top-[24px] bottom-0 left-[80px] w-0.5 ${statusColor}`}
         />
-        <div className="flex flex-col space-y-6 relative">
+        <div className="relative flex flex-col space-y-6">
           {satellite.status.map((flyover, idx) => (
             <TimelineEvent
               key={idx}
@@ -86,7 +87,7 @@ export default function SatelliteCard({ satellite }) {
 function TimelineEvent({ event, bgColor }) {
   return (
     <div className="flex items-center gap-x-[15px]">
-      <p className="text-xs text-muted-foreground w-[40px]">
+      <p className="text-muted-foreground w-[40px] text-xs">
         {event.start
           ? new Date(event.start).toLocaleTimeString([], {
               hour: "2-digit",
@@ -95,7 +96,7 @@ function TimelineEvent({ event, bgColor }) {
           : "--:--"}
       </p>
       <div
-        className={`w-[40px] h-[40px] ${bgColor} text-white flex items-center justify-center rounded-full`}
+        className={`h-[40px] w-[40px] ${bgColor} flex items-center justify-center rounded-full text-white`}
       >
         {statusIcons[event.status]}
       </div>

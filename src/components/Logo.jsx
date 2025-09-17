@@ -1,14 +1,17 @@
 import clsx from "clsx";
+
 import Heading from "./Heading";
 
 function Logo({ className }) {
   return (
-    <div className={clsx("flex flex-col items-center justify-center", className)}>
-      <div className="relative w-24 h-24">
+    <div
+      className={clsx("flex flex-col items-center justify-center", className)}
+    >
+      <div className="relative h-24 w-24">
         {/* 背景圖形 */}
         <svg
           viewBox="0 0 100 100"
-          className="absolute top-0 left-0 w-full h-full"
+          className="absolute top-0 left-0 h-full w-full"
           xmlns="http://www.w3.org/2000/svg"
         >
           {/* 中心行星 */}
@@ -33,10 +36,10 @@ function Logo({ className }) {
 
         {/* 衛星（繞行動畫） */}
         <div
-          className="absolute top-0 left-0 w-full h-full animate-spin-orbit"
+          className="animate-spin-orbit absolute top-0 left-0 h-full w-full"
           style={{ transformOrigin: "center" }}
         >
-          <svg viewBox="0 0 100 100" className="w-full h-full">
+          <svg viewBox="0 0 100 100" className="h-full w-full">
             <circle
               cx="80"
               cy="50"

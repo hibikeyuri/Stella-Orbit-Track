@@ -1,5 +1,5 @@
-import { NavLink } from "react-router-dom";
 import clsx from "clsx";
+import { NavLink } from "react-router-dom";
 
 // 自訂 Span component，處理 isActive 狀態與 className 合併
 function Span({ isActive = false, className = "", children }) {
@@ -7,7 +7,7 @@ function Span({ isActive = false, className = "", children }) {
     "h-6 w-6 text-gray-400 transition-colors duration-300",
     "group-hover:text-brand-600",
     isActive && "text-brand-600",
-    className
+    className,
   );
   return <span className={mergedClassName}>{children}</span>;
 }
@@ -31,7 +31,7 @@ function MainNav() {
                 clsx(
                   "group flex items-center gap-3 rounded-sm px-6 py-3 text-[1.6rem] font-medium transition-all duration-300",
                   "text-gray-600 hover:bg-gray-50 hover:text-gray-800",
-                  isActive && "bg-gray-50 text-gray-800"
+                  isActive && "bg-gray-50 text-gray-800",
                 )
               }
             >

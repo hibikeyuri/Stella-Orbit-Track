@@ -1,8 +1,8 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export function formatDateTimeLocalUTC(dateStr?: string): string {
@@ -11,9 +11,9 @@ export function formatDateTimeLocalUTC(dateStr?: string): string {
   const pad = (n: number) => n.toString().padStart(2, "0");
 
   return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(
-    date.getUTCDate()
+    date.getUTCDate(),
   )}T${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(
-    date.getUTCSeconds()
+    date.getUTCSeconds(),
   )}`;
 }
 

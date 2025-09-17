@@ -1,5 +1,5 @@
-import Heading from "../components/Heading"
-import Row from "../components/Row"
+import Heading from "../components/Heading";
+import Row from "../components/Row";
 
 function Settings() {
   return (

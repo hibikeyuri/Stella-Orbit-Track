@@ -1,9 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Heading from "../components/Heading";
-import Row from "../components/Row";
-import { Button } from "../ui/button.tsx";
-import { satellites as realsatellites } from "@/data/data-satellites";
-import Spinner from "@/components/Spinner";
 import {
   BarChart,
   Bar,
@@ -20,10 +15,21 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import {parseTLE, meanMotionToAltitude, generateFlyoverHistory, TaipeiLocation} from "@/utils/algo-satellites"
-import SatelliteView from "@/features/satellite/SatelliteView";
-import SatelliteCard from "@/features/satellite/SatelliteCard";
 
+import Heading from "../components/Heading";
+import Row from "../components/Row";
+import { Button } from "../ui/button.tsx";
+
+import Spinner from "@/components/Spinner";
+import { satellites as realsatellites } from "@/data/data-satellites";
+import SatelliteCard from "@/features/satellite/SatelliteCard";
+import SatelliteView from "@/features/satellite/SatelliteView";
+import {
+  parseTLE,
+  meanMotionToAltitude,
+  generateFlyoverHistory,
+  TaipeiLocation,
+} from "@/utils/algo-satellites";
 
 const COLORS = ["#0088FE", "#FF8042", "#82ca9d"];
 
@@ -47,11 +53,11 @@ export default function Dashboard() {
     //   randomTLE(i + 1),
     // );
     // const tleRaw = [...mocksatellites, ...realsatellites];
-    const tleRaw = realsatellites
-    
+    const tleRaw = realsatellites;
+
     if (tleRaw.length === 0) return;
 
-    console.log(tleRaw)
+    console.log(tleRaw);
     const parsed = tleRaw.map((s) => {
       const p = parseTLE(s);
       p.altitude = meanMotionToAltitude(p.meanMotion);
@@ -62,12 +68,12 @@ export default function Dashboard() {
         TaipeiLocation.lon,
         TaipeiLocation.alt,
         5, // next number of flyovers
-      )
+      );
       p.status = statusHistory;
-      console.log(p)
+      console.log(p);
       return p;
     });
-    console.log(parsed)
+    console.log(parsed);
     setSatellites(parsed);
   }, []);
 
@@ -156,7 +162,7 @@ export default function Dashboard() {
       </Row>
 
       {/* Satellites Statics */}
-      <div className="grid auto-rows-min gap-4 md:grid-cols-4 space-y-8">
+      <div className="grid auto-rows-min gap-4 space-y-8 md:grid-cols-4">
         <StaticLabel value={satellites.length} label="Total Satellites" />
         <StaticLabel value={1} label="Deprecated" />
         <StaticLabel value={2} label="Fly Over Numbers" />
@@ -164,7 +170,7 @@ export default function Dashboard() {
       </div>
 
       {/* Satellites TLE Inference Data */}
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 space-y-8">
+      <div className="grid grid-cols-1 gap-8 space-y-8 md:grid-cols-2 lg:grid-cols-3">
         {/* Inclination Distribution */}
         <div>
           <h2 className="mb-2 text-lg font-bold">Inclination Distribution</h2>
@@ -280,14 +286,11 @@ export default function Dashboard() {
       </div>
 
       {/* Fly Over Status */}
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3 space-y-8">
-        {
-          satellites.map((satellite) => (
-            <SatelliteCard satellite={satellite}></SatelliteCard>
-          ))
-        }
+      <div className="grid auto-rows-min gap-4 space-y-8 md:grid-cols-3">
+        {satellites.map((satellite) => (
+          <SatelliteCard satellite={satellite}></SatelliteCard>
+        ))}
       </div>
-
     </>
   );
 }
