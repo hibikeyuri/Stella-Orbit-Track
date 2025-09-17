@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { LayoutDashboard, SatelliteDish, Users, Settings } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 // 自訂 Span component，處理 isActive 狀態與 className 合併
@@ -14,10 +15,10 @@ function Span({ isActive = false, className = "", children }) {
 
 function MainNav() {
   const links = [
-    { to: "/dashboard", icon: "X", label: "Dashboard" },
-    { to: "/satellites", icon: "X", label: "Satellites" },
-    { to: "/users", icon: "X", label: "Users" },
-    { to: "/settings", icon: "X", label: "Settings" },
+    { to: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
+    { to: "/satellites", icon: <SatelliteDish />, label: "Satellites" },
+    { to: "/users", icon: <Users />, label: "Users" },
+    { to: "/settings", icon: <Settings />, label: "Settings" },
   ];
 
   return (
