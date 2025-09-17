@@ -288,7 +288,11 @@ export default function Dashboard() {
       {/* Fly Over Status */}
       <div className="grid auto-rows-min gap-4 space-y-8 md:grid-cols-3">
         {satellites.map((satellite) => (
-          <SatelliteCard satellite={satellite}></SatelliteCard>
+          <div
+            key={satellite.id}
+          >
+            <SatelliteCard satellite={satellite} />
+          </div>
         ))}
       </div>
     </>
