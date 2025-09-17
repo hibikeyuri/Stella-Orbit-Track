@@ -9,12 +9,12 @@ export function Table({
   emptyMessage = "No data found.",
 }) {
   return (
-    <div className="border-grey-200 rounded-lg border text-[1rem] min-w-[1400px]">
+    <div className="border-grey-200 min-w-[1400px] rounded-lg border text-[1rem]">
       {/* Header */}
       <div>{header}</div>
 
       {/* Body */}
-      <div className="my-1 bg-grey-0 min-w-[1400px]" role="row">
+      <div className="bg-grey-0 my-1 min-w-[1400px]" role="row">
         {rows.length > 0 ? (
           rows.map((row, index) => (
             <div

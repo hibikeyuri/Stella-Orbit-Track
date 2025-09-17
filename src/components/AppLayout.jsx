@@ -1,11 +1,12 @@
-import { Outlet } from "react-router-dom";
 import clsx from "clsx";
-import Sidebar from "./Sidebar";
-import Header from "./Header";
+import { Outlet } from "react-router-dom";
 
-function Container({children}) {
+import Header from "./Header";
+import Sidebar from "./Sidebar";
+
+function Container({ children }) {
   return (
-    <div className="mx-auto max-w-[120rem] px-4 flex flex-col">{children}</div>
+    <div className="mx-auto flex max-w-[120rem] flex-col px-4">{children}</div>
   );
 }
 

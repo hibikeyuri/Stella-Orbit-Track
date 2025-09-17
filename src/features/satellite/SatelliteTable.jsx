@@ -1,16 +1,18 @@
-import { Table } from "../../components/Table";
-import Spinner from "../../components/Spinner";
-import { deleteSatellites, getSatellites } from "../../services/apiSatellites";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
-import React, { useState } from "react";
-import { Button } from "@/ui/button";
 import { AlertTriangle, Satellite } from "lucide-react";
+import React, { useState } from "react";
+import { useRef } from "react";
 // import toast from "react-hot-toast";
 
-import { useRef } from "react";
-import ToastModal from "@/components/ToastModal";
+import Spinner from "../../components/Spinner";
+import { Table } from "../../components/Table";
+import { deleteSatellites, getSatellites } from "../../services/apiSatellites";
+
 import CreateSatelliteForm from "./CreateSatelliteForm";
+
+import ToastModal from "@/components/ToastModal";
+import { Button } from "@/ui/button";
 
 const columnstyle =
   "grid-cols-[0.6fr_0.8fr_0.8fr_0.6fr_1.2fr_2fr_2fr_0.5fr_0.5fr] min-w-[1400px] px-4 py-2";
@@ -138,7 +140,9 @@ function SatelliteTable() {
         <Button
           size="sm"
           variant="secondary"
-          onClick={() => setEditingId((id) => (id === satellite.id ? null : satellite.id))}
+          onClick={() =>
+            setEditingId((id) => (id === satellite.id ? null : satellite.id))
+          }
         >
           {isEditing ? "Close" : "Edit"}
         </Button>
@@ -155,12 +159,14 @@ function SatelliteTable() {
       </div>,
     ];
 
-    const editRow = [<div className="col-span-full" key={`edit-${satellite.id}`}><CreateSatelliteForm satelliteToEdit={satellite}></CreateSatelliteForm></div>];
+    const editRow = [
+      <div className="col-span-full" key={`edit-${satellite.id}`}>
+        <CreateSatelliteForm satelliteToEdit={satellite}></CreateSatelliteForm>
+      </div>,
+    ];
 
     return isEditing ? [mainRow, editRow] : [mainRow];
   });
-
-
   return (
     <ToastModal ref={toastRef}>
       <Table

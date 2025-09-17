@@ -1,9 +1,11 @@
-import { Button } from "@/ui/button";
+import { useState } from "react";
+
 import Heading from "../components/Heading";
 import Row from "../components/Row";
 import SatelliteTable from "../features/satellite/SatelliteTable";
-import { useState } from "react";
+
 import CreateSatelliteForm from "@/features/satellite/CreateSatelliteForm";
+import { Button } from "@/ui/button";
 
 function Satellites() {
   // useEffect(function () {
@@ -16,8 +18,12 @@ function Satellites() {
       <Row>
         <Heading as="h1">Satellites</Heading>
         <Heading as="h2">Test</Heading>
-        <SatelliteTable/>
-        <Button onClick={() => {setShowForm(show => !show)}}>
+        <SatelliteTable />
+        <Button
+          onClick={() => {
+            setShowForm((show) => !show);
+          }}
+        >
           Add new Satellite
         </Button>
         {showForm && <CreateSatelliteForm></CreateSatelliteForm>}

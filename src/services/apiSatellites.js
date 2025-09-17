@@ -20,7 +20,7 @@ export async function createSatellites(satellite, id) {
 
   if (id) {
     console.log("OKOK");
-    query = query.update({...satellite}).eq("id", id);
+    query = query.update({ ...satellite }).eq("id", id);
   }
 
   const { data: satellites, error } = await query.select();

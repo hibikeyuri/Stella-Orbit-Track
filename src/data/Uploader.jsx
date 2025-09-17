@@ -1,8 +1,10 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+
+import { satellites } from "./data-satellites";
+
 import supabase from "@/services/supabase";
 import { Button } from "@/ui/button";
-import { satellites } from "./data-satellites";
-import { useQueryClient } from "@tanstack/react-query";
 
 export function Uploader() {
   const [isLoading, setIsLoading] = useState(false);

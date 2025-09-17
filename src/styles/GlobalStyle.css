@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
- /*origin UI*/
+/*origin UI*/
 @theme {
   --radius-radius: 0.625rem;
   --color-background: oklch(1 0 0);
@@ -40,7 +40,7 @@
 
 /*self css settings*/
 @theme {
-    /* Indigo */
+  /* Indigo */
   --color-brand-50: #eef2ff;
   --color-brand-100: #e0e7ff;
   --color-brand-200: #c7d2fe;
@@ -90,41 +90,41 @@
   --border-radius-lg: 9px;
 }
 
- /*origin UI dark mode*/
+/*origin UI dark mode*/
 @layer theme {
   .dark {
-      --color-background: oklch(0.141 0.005 285.823);
-      --color-foreground: oklch(0.985 0 0);
-      --color-card: oklch(0.141 0.005 285.823);
-      --color-card-foreground: oklch(0.985 0 0);
-      --color-popover: oklch(0.141 0.005 285.823);
-      --color-popover-foreground: oklch(0.985 0 0);
-      --color-primary: oklch(0.985 0 0);
-      --color-primary-foreground: oklch(0.21 0.006 285.885);
-      --color-secondary: oklch(0.274 0.006 286.033);
-      --color-secondary-foreground: oklch(0.985 0 0);
-      --color-muted: oklch(0.21 0.006 285.885);
-      --color-muted-foreground: oklch(0.65 0.01 286);
-      --color-accent: oklch(0.21 0.006 285.885);
-      --color-accent-foreground: oklch(0.985 0 0);
-      --color-destructive: oklch(0.396 0.141 25.723);
-      --color-destructive-foreground: oklch(0.637 0.237 25.331);
-      --color-border: oklch(0.274 0.006 286.033);
-      --color-input: oklch(0.274 0.006 286.033);
-      --color-ring: oklch(0.442 0.017 285.786);
-      --color-chart-1: oklch(0.488 0.243 264.376);
-      --color-chart-2: oklch(0.696 0.17 162.48);
-      --color-chart-3: oklch(0.769 0.188 70.08);
-      --color-chart-4: oklch(0.627 0.265 303.9);
-      --color-chart-5: oklch(0.645 0.246 16.439);
-      --color-sidebar: oklch(0.205 0 0);
-      --color-sidebar-foreground: oklch(0.985 0 0);
-      --color-sidebar-primary: oklch(0.488 0.243 264.376);
-      --color-sidebar-primary-foreground: oklch(0.985 0 0);
-      --color-sidebar-accent: oklch(0.269 0 0);
-      --color-sidebar-accent-foreground: oklch(0.985 0 0);
-      --color-sidebar-border: oklch(0.274 0.006 286.033);
-      --color-sidebar-ring: oklch(0.442 0.017 285.786);
+    --color-background: oklch(0.141 0.005 285.823);
+    --color-foreground: oklch(0.985 0 0);
+    --color-card: oklch(0.141 0.005 285.823);
+    --color-card-foreground: oklch(0.985 0 0);
+    --color-popover: oklch(0.141 0.005 285.823);
+    --color-popover-foreground: oklch(0.985 0 0);
+    --color-primary: oklch(0.985 0 0);
+    --color-primary-foreground: oklch(0.21 0.006 285.885);
+    --color-secondary: oklch(0.274 0.006 286.033);
+    --color-secondary-foreground: oklch(0.985 0 0);
+    --color-muted: oklch(0.21 0.006 285.885);
+    --color-muted-foreground: oklch(0.65 0.01 286);
+    --color-accent: oklch(0.21 0.006 285.885);
+    --color-accent-foreground: oklch(0.985 0 0);
+    --color-destructive: oklch(0.396 0.141 25.723);
+    --color-destructive-foreground: oklch(0.637 0.237 25.331);
+    --color-border: oklch(0.274 0.006 286.033);
+    --color-input: oklch(0.274 0.006 286.033);
+    --color-ring: oklch(0.442 0.017 285.786);
+    --color-chart-1: oklch(0.488 0.243 264.376);
+    --color-chart-2: oklch(0.696 0.17 162.48);
+    --color-chart-3: oklch(0.769 0.188 70.08);
+    --color-chart-4: oklch(0.627 0.265 303.9);
+    --color-chart-5: oklch(0.645 0.246 16.439);
+    --color-sidebar: oklch(0.205 0 0);
+    --color-sidebar-foreground: oklch(0.985 0 0);
+    --color-sidebar-primary: oklch(0.488 0.243 264.376);
+    --color-sidebar-primary-foreground: oklch(0.985 0 0);
+    --color-sidebar-accent: oklch(0.269 0 0);
+    --color-sidebar-accent-foreground: oklch(0.985 0 0);
+    --color-sidebar-border: oklch(0.274 0.006 286.033);
+    --color-sidebar-ring: oklch(0.442 0.017 285.786);
   }
 }
 
@@ -231,7 +231,6 @@ img {
   filter: grayscale(var(--image-grayscale)) opacity(var(--image-opacity));
 } */
 
-
 @keyframes spin-custom {
   to {
     transform: rotate(1turn);
@@ -244,7 +243,8 @@ img {
   aspect-ratio: 1;
   border-radius: 50%;
   background:
-    radial-gradient(farthest-side, var(--color-brand-600) 94%, #0000) top/10px 10px no-repeat,
+    radial-gradient(farthest-side, var(--color-brand-600) 94%, #0000) top/10px
+      10px no-repeat,
     conic-gradient(#0000 30%, var(--color-brand-600));
   -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 10px), #000 0);
   animation: spin-custom 1.5s infinite linear;

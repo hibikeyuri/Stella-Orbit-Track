@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Description } from "@radix-ui/react-toast";
 import { CircleCheckIcon, CircleXIcon, XIcon } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { forwardRef, useImperativeHandle } from "react";
 
 import { Button } from "@/ui/button";
 import {
@@ -11,8 +13,6 @@ import {
   ToastTitle,
   ToastViewport,
 } from "@/ui/toast";
-import { forwardRef, useImperativeHandle } from "react";
-import { Description } from "@radix-ui/react-toast";
 
 function useProgressTimer({ duration, interval = 100, onComplete }) {
   const [progress, setProgress] = useState(duration);

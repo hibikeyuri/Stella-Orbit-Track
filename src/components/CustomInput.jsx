@@ -1,5 +1,5 @@
-import { Input } from "@/ui/input"
-import { Label } from "@/ui/label"
+import { Input } from "@/ui/input";
+import { Label } from "@/ui/label";
 
 export default function CustomInput() {
   const id = null;
@@ -9,7 +9,7 @@ export default function CustomInput() {
         Required input <span className="text-destructive">*</span>
       </Label>
       <Input id={id} placeholder="Email" type="email" required />
-            <p
+      <p
         className="text-muted-foreground mt-2 text-xs"
         role="region"
         aria-live="polite"
@@ -17,6 +17,5 @@ export default function CustomInput() {
         We won&lsquo;t share your email with anyone
       </p>
     </div>
-  )
+  );
 }
-
