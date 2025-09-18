@@ -96,7 +96,7 @@ const ToastModal = forwardRef((props, ref) => {
     type: "success",
   });
 
-  const toastDuration = 5000;
+  const toastDuration = 2000;
   const { progress, start, pause, resume, reset } = useProgressTimer({
     duration: toastDuration,
     onComplete: () => setOpen(false),
