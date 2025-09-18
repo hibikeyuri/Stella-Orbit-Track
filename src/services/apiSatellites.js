@@ -14,19 +14,27 @@ export async function getSatellites() {
 }
 
 export async function createSatellites(satellite, id) {
-  const imageName = `${Math.random()} - ${satellite.img[0].name}`.replaceAll(
+  const hasImagePath = satellite.img?.startsWith?.(supabaseUrl);
+
+  const imageName = `${Math.random()} - ${satellite.img.name}`.replaceAll(
     "/",
     "",
   );
-  const imagePath = `${supabaseUrl}/storage/v1/object/public/satellite-images/${imageName}`;
-  // https://huyyxirnkphjevrhsumk.supabase.co/storage/v1/object/public/satellite-images/548301902_1199724078843476_7843780013730249375_n.jpg
+  const imagePath = hasImagePath
+    ? satellite.img
+    : `${supabaseUrl}/storage/v1/object/public/satellite-images/${imageName}`;
+
+  // 前置查詢
   let query = supabase.from("satellites");
   console.log(satellite);
+
+  // 新增
   if (!id) query = query.insert([{ ...satellite, img: imagePath }]);
 
+  // 修改
   if (id) {
     console.log("OKOK");
-    query = query.update({ ...satellite }).eq("id", id);
+    query = query.update({ ...satellite, img: imagePath }).eq("id", id);
   }
 
   const { data: satellites, error } = await query.select();
@@ -38,7 +46,7 @@ export async function createSatellites(satellite, id) {
 
   const { error: storageError } = await supabase.storage
     .from("satellite-images")
-    .upload(imageName, satellite.img[0]);
+    .upload(imageName, satellite.img);
 
   if (storageError) {
     await supabase.from("satellites").delete().eq("id", satellite.id);

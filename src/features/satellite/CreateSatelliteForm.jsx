@@ -85,8 +85,10 @@ function CreateSatelliteForm({ satelliteToEdit = {} }) {
   console.log(errors);
 
   function onSubmit(data) {
-    if (isEditSession) editSatellite({ satelliteData: data, id: editId });
-    else createSatellite(data);
+    const img = typeof data.img === "string" ? data.img : data.img[0];
+    if (isEditSession)
+      editSatellite({ satelliteData: { ...data, img }, id: editId });
+    else createSatellite({ ...data, img });
     console.log(data);
     console.log(data.img);
   }
@@ -208,7 +210,7 @@ function CreateSatelliteForm({ satelliteToEdit = {} }) {
             Cancel
           </Button>
           <Button size="lg" type="submit" disabled={isWorking}>
-            Add Satellite
+            {isEditSession ? "Edit Satellite" : "Create New Satellite"}
           </Button>
         </FormRow>
       </Form>
