@@ -1,16 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import { AlertTriangle, Satellite } from "lucide-react";
 import React, { useState } from "react";
-import { useRef } from "react";
 // import toast from "react-hot-toast";
 
 import Spinner from "../../components/Spinner";
 import { Table } from "../../components/Table";
-import { deleteSatellites, getSatellites } from "../../services/apiSatellites";
 
 import CreateSatelliteForm from "./CreateSatelliteForm";
 import { SatelliteRow } from "./SatelliteRow";
+import { useDeleteSatellite } from "./useDeleteSatellite";
+import { useSatellites } from "./useSatellites";
 
 import ToastModal from "@/components/ToastModal";
 import { Button } from "@/ui/button";
@@ -33,47 +32,9 @@ function TableHeader({ children, className }) {
 function SatelliteTable() {
   const [editingId, setEditingId] = useState(null);
 
-  const {
-    data: satellites,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["satellites"],
-    queryFn: getSatellites,
-  });
+  const { isLoading, error, satellites } = useSatellites();
 
-  const queryClient = useQueryClient();
-
-  const toastRef = useRef();
-
-  const showSuccess = () => {
-    console.log(toastRef.current);
-    toastRef.current?.openToast({
-      title: "Satellite successfully deleted!",
-      description: "request is completed",
-      type: "success",
-    });
-  };
-
-  const showError = (err) => {
-    toastRef.current?.openToast({
-      title: err.message,
-      description: "error",
-      type: "error",
-    });
-  };
-
-  const { isLoading: isDeleting, mutate } = useMutation({
-    mutationFn: deleteSatellites,
-    onSuccess: () => {
-      // toast.success("Satellite successfully deleted!");
-      showSuccess();
-      queryClient.invalidateQueries({
-        queryKey: ["satellites"],
-      });
-    },
-    onError: (err) => showError(err.message),
-  });
+  const { toastRef, isDeleting, deleteSatellite } = useDeleteSatellite();
 
   if (error) return;
   if (isLoading) return <Spinner />;
@@ -107,7 +68,7 @@ function SatelliteTable() {
               satellite={satellite}
               editingId={editingId}
               setEditingId={setEditingId}
-              mutate={mutate}
+              mutate={deleteSatellite}
               isDeleting={isDeleting}
               className={columnstyle}
             />

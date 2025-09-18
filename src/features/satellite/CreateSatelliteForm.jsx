@@ -1,12 +1,13 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef } from "react";
 import { useForm } from "react-hook-form";
+
+import { useCreateSatellite } from "./useCreateSatellite";
+import { useEditSatellite } from "./useEditSatellite";
 
 import Form from "@/components/Form";
 import FormRow from "@/components/FormRow";
 import ToastModal from "@/components/ToastModal";
 import { formatDateTimeLocalUTC } from "@/lib/utils";
-import { createSatellites } from "@/services/apiSatellites";
 import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
@@ -17,60 +18,10 @@ function CreateSatelliteForm({ satelliteToEdit = {} }) {
   // console.log(formatDateTimeLocalUTC(sourceDate));
   const isEditSession = Boolean(editId);
 
-  const queryClient = useQueryClient();
-
   const toastRef = useRef();
 
-  const createInfo = {
-    title: "Satellite Successfully Created!",
-    description: "request is completed",
-    type: "success",
-  };
-
-  const editInfo = {
-    title: "Satellite Successfully Edited!",
-    description: "request is completed",
-    type: "success",
-  };
-
-  const showSuccess = (info) => {
-    console.log(toastRef.current);
-    toastRef.current?.openToast(info);
-  };
-
-  const showError = (err) => {
-    toastRef.current?.openToast({
-      title: err.message,
-      description: "error",
-      type: "error",
-    });
-  };
-
-  const { mutate: createSatellite, isLoading: isCreating } = useMutation({
-    mutationFn: createSatellites,
-    onSuccess: () => {
-      showSuccess(createInfo);
-      queryClient.invalidateQueries({ queryKey: ["satellites"] });
-      reset();
-    },
-    onError: (err) => {
-      showError(err);
-    },
-  });
-
-  const { mutate: editSatellite, isLoading: isEditing } = useMutation({
-    mutationFn: ({ satelliteData, id }) => createSatellites(satelliteData, id),
-    onSuccess: () => {
-      showSuccess(editInfo);
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["satellites"] });
-      }, 5000);
-      reset();
-    },
-    onError: (err) => {
-      showError(err);
-    },
-  });
+  const { isCreating, createSatellite } = useCreateSatellite(toastRef);
+  const { isEditing, editSatellite } = useEditSatellite(toastRef);
 
   const isWorking = isCreating || isEditing;
 
@@ -85,10 +36,33 @@ function CreateSatelliteForm({ satelliteToEdit = {} }) {
   console.log(errors);
 
   function onSubmit(data) {
-    const img = typeof data.img === "string" ? data.img : data.img[0];
-    if (isEditSession)
-      editSatellite({ satelliteData: { ...data, img }, id: editId });
-    else createSatellite({ ...data, img });
+    // 只在有圖片的情況下才處理 img
+    const img = data.img
+      ? typeof data.img === "string"
+        ? data.img
+        : data.img[0]
+      : undefined;
+
+    // 根據圖片與否計算酬載
+    const payload = img ? { ...data, img } : { ...data };
+
+    if (isEditSession) {
+      editSatellite(
+        { satelliteData: payload, id: editId },
+        {
+          onSuccess: () => {
+            reset();
+          },
+        },
+      );
+    } else {
+      createSatellite(payload, {
+        onSuccess: () => {
+          reset();
+        },
+      });
+    }
+
     console.log(data);
     console.log(data.img);
   }
