@@ -30,9 +30,9 @@ export function useDeleteSatellite() {
     onSuccess: () => {
       // toast.success("Satellite successfully deleted!");
       showSuccess();
-      queryClient.invalidateQueries({
-        queryKey: ["satellites"],
-      });
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["satellites"] });
+      }, 2000);
     },
     onError: (err) => showError(err.message),
   });

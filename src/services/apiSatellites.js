@@ -1,3 +1,5 @@
+import { data } from "react-router";
+
 import supabase, { supabaseUrl } from "./supabase";
 
 export async function getSatellites() {
@@ -43,6 +45,8 @@ export async function createSatellites(satellite, id) {
     console.error(error);
     throw new Error("Satellite cound not be created");
   }
+
+  if (hasImagePath) return data;
 
   const { error: storageError } = await supabase.storage
     .from("satellite-images")

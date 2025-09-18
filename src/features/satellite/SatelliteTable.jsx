@@ -8,7 +8,6 @@ import { Table } from "../../components/Table";
 
 import CreateSatelliteForm from "./CreateSatelliteForm";
 import { SatelliteRow } from "./SatelliteRow";
-import { useDeleteSatellite } from "./useDeleteSatellite";
 import { useSatellites } from "./useSatellites";
 
 import ToastModal from "@/components/ToastModal";
@@ -34,8 +33,6 @@ function SatelliteTable() {
 
   const { isLoading, error, satellites } = useSatellites();
 
-  const { toastRef, isDeleting, deleteSatellite } = useDeleteSatellite();
-
   if (error) return;
   if (isLoading) return <Spinner />;
 
@@ -55,27 +52,23 @@ function SatelliteTable() {
   );
 
   return (
-    <ToastModal ref={toastRef}>
-      <Table role="table" header={headerContent} className={columnstyle}>
-        {satellites.map((satellite, index) => (
-          <div
-            key={satellite.id}
-            className={`${
-              index !== satellites.length - 1 ? "border-grey-100 border-b" : ""
-            }`}
-          >
-            <SatelliteRow
-              satellite={satellite}
-              editingId={editingId}
-              setEditingId={setEditingId}
-              mutate={deleteSatellite}
-              isDeleting={isDeleting}
-              className={columnstyle}
-            />
-          </div>
-        ))}
-      </Table>
-    </ToastModal>
+    <Table role="table" header={headerContent} className={columnstyle}>
+      {satellites.map((satellite, index) => (
+        <div
+          key={satellite.id}
+          className={`${
+            index !== satellites.length - 1 ? "border-grey-100 border-b" : ""
+          }`}
+        >
+          <SatelliteRow
+            satellite={satellite}
+            editingId={editingId}
+            setEditingId={setEditingId}
+            className={columnstyle}
+          />
+        </div>
+      ))}
+    </Table>
   );
 }
 
