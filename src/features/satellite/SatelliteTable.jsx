@@ -15,7 +15,7 @@ import ToastModal from "@/components/ToastModal";
 import { Button } from "@/ui/button";
 
 const columnstyle =
-  "grid-cols-[0.6fr_0.8fr_0.8fr_0.6fr_1.2fr_2fr_2fr_0.5fr_0.5fr] min-w-[1400px] px-4 py-2";
+  "grid-cols-[1fr_0.8fr_1fr_0.6fr_1.2fr_2.2fr_2.2fr_0.8fr_0.8fr] min-w-[1400px] px-4 py-2";
 
 function TableHeader({ children, className }) {
   return (
@@ -104,7 +104,17 @@ function SatelliteTable() {
       //   alt={satellite.name}
       //   className="h-8 w-8 object-contain"
       // />,
-      <Satellite key={`img-${satellite.id}`}>{satellite.id}</Satellite>,
+      satellite.img ? (
+        <div key={`img-${satellite.id}`}>
+          <img
+            src={satellite.img}
+            alt={satellite.id}
+            className="h-32 w-32 object-cover"
+          />
+        </div>
+      ) : (
+        <Satellite key={`img-${satellite.id}`} />
+      ),
       <div key={`id-${satellite.id}`}>{satellite.norad_id}</div>,
       <div key={`name-${satellite.id}`}>{satellite.name}</div>,
       <div key={`cat-${satellite.id}`}>{satellite.category}</div>,

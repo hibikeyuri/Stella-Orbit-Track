@@ -22,16 +22,17 @@ function CreateSatelliteForm({ satelliteToEdit = {} }) {
   const toastRef = useRef();
 
   const createInfo = {
-    title: "Satellite successfully Created!",
+    title: "Satellite Successfully Created!",
     description: "request is completed",
     type: "success",
   };
 
   const editInfo = {
-    title: "Satellite successfully Edited!",
+    title: "Satellite Successfully Edited!",
     description: "request is completed",
     type: "success",
   };
+
   const showSuccess = (info) => {
     console.log(toastRef.current);
     toastRef.current?.openToast(info);
@@ -78,17 +79,22 @@ function CreateSatelliteForm({ satelliteToEdit = {} }) {
       ? { ...editValues, id: editId, date: formatDateTimeLocalUTC(sourceDate) }
       : {},
   });
+
   const { errors } = formState;
+
   console.log(errors);
+
   function onSubmit(data) {
     if (isEditSession) editSatellite({ satelliteData: data, id: editId });
     else createSatellite(data);
     console.log(data);
+    console.log(data.img);
   }
 
   function onError(err) {
     console.log(err);
   }
+
   return (
     <ToastModal ref={toastRef}>
       <Form onSubmit={handleSubmit(onSubmit, onError)}>
@@ -182,6 +188,18 @@ function CreateSatelliteForm({ satelliteToEdit = {} }) {
             id="is_active"
             type="checkbox"
             {...register("is_active")}
+          ></Input>
+        </FormRow>
+
+        <FormRow>
+          <Label htmlFor="img" className="text-1xl">
+            Satellite Image
+          </Label>
+          <Input
+            id="img"
+            accept="image/*"
+            type="file"
+            {...register("img")}
           ></Input>
         </FormRow>
 
