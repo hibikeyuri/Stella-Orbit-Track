@@ -1,61 +1,76 @@
 import { SatelliteIcon } from "lucide-react";
 
 import CreateSatelliteForm from "./CreateSatelliteForm";
+import { useCreateSatellite } from "./useCreateSatellite";
+import { useDeleteSatellite } from "./useDeleteSatellite";
 
+import ToastModal from "@/components/ToastModal";
 import { Button } from "@/ui/button";
+
 export function SatelliteRow({
   satellite,
   editingId,
   setEditingId,
-  mutate,
-  isDeleting,
   className,
 }) {
-  const isEditing = editingId === satellite.id;
+  const { id, norad_id, name, category, date, line1, line2, img, is_active } = satellite;
+  const isEditing = editingId === id;
+
+  const { toastRef, isDeleting, deleteSatellite } = useDeleteSatellite();
+  const { _, createSatellite } = useCreateSatellite(toastRef);
+
+  function handleDuplicate() {
+    const { id, norad_id, ...rest } = satellite;
+
+    const newSatellite = {
+      ...rest,
+      id: id + 1,
+      norad_id: norad_id + 1,
+    };
+
+    createSatellite(newSatellite, {
+      onSuccess: () => {
+        console.log("Satellite duplicated!");
+      },
+    });
+  }
 
   return (
-    <>
+    <ToastModal ref={toastRef}>
       {/* Main row */}
       <div className={className}>
-        {satellite.img ? (
-          <div>
-            <img
-              src={satellite.img}
-              alt={satellite.id}
-              className="h-32 w-32 object-cover"
-            />
-          </div>
-        ) : (
-          <SatelliteIcon />
-        )}
-        <div>{satellite.norad_id}</div>
-        <div>{satellite.name}</div>
-        <div>{satellite.category}</div>
-        <div>{satellite.date}</div>
-        <div>{satellite.line1}</div>
-        <div>{satellite.line2}</div>
         <div>
-          {satellite.is_active ? (
-            <Button
-              className="pointer-events-none rounded-full bg-green-700"
-              size="sm"
-            >
-              active
-            </Button>
+          {img ? (
+            <img src={img} alt={id} className="h-32 w-32 object-cover" />
           ) : (
-            <Button
-              className="pointer-events-none rounded-full bg-red-700"
-              size="sm"
-            >
-              offline
-            </Button>
+            <SatelliteIcon />
           )}
         </div>
+
+        <div>{norad_id}</div>
+        <div>{name}</div>
+        <div>{category}</div>
+        <div>{date}</div>
+        <div>{line1}</div>
+        <div>{line2}</div>
+
         <div>
           <Button
             size="sm"
+            className={`pointer-events-none rounded-full ${is_active ? "bg-green-700" : "bg-red-700"}`}
+          >
+            {is_active ? "active" : "offline"}
+          </Button>
+        </div>
+
+        <div>
+          <Button size="sm" variant="secondary" onClick={handleDuplicate}>
+            Duplicate
+          </Button>
+          <Button
+            size="sm"
             variant="destructive"
-            onClick={() => mutate(satellite.id)}
+            onClick={() => deleteSatellite(id)}
             disabled={isDeleting}
           >
             Delete
@@ -63,7 +78,7 @@ export function SatelliteRow({
           <Button
             size="sm"
             variant="secondary"
-            onClick={() => setEditingId(isEditing ? null : satellite.id)}
+            onClick={() => setEditingId(isEditing ? null : id)}
           >
             {isEditing ? "Close" : "Edit"}
           </Button>
@@ -76,6 +91,6 @@ export function SatelliteRow({
           <CreateSatelliteForm satelliteToEdit={satellite} />
         </div>
       )}
-    </>
+    </ToastModal>
   );
 }
