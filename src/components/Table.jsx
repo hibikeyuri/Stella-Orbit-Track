@@ -1,10 +1,8 @@
-import clsx from "clsx";
 import React from "react";
 
 export function Table({
-  className, // satellites
   header,
-  rows = [],
+  children,
   footer,
   emptyMessage = "No data found.",
 }) {
@@ -15,20 +13,8 @@ export function Table({
 
       {/* Body */}
       <div className="bg-grey-0 my-1 min-w-[1400px]" role="row">
-        {rows.length > 0 ? (
-          rows.map((row, index) => (
-            <div
-              key={index}
-              className={clsx(
-                className,
-                `grid ${
-                  index !== rows.length - 1 ? "border-grey-100 border-b" : ""
-                }`,
-              )}
-            >
-              {row}
-            </div>
-          ))
+        {children ? (
+          children
         ) : (
           <p className="my-6 text-center text-[1.6rem] font-medium">
             {emptyMessage}

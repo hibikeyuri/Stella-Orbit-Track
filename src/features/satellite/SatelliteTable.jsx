@@ -10,12 +10,13 @@ import { Table } from "../../components/Table";
 import { deleteSatellites, getSatellites } from "../../services/apiSatellites";
 
 import CreateSatelliteForm from "./CreateSatelliteForm";
+import { SatelliteRow } from "./SatelliteRow";
 
 import ToastModal from "@/components/ToastModal";
 import { Button } from "@/ui/button";
 
 const columnstyle =
-  "grid-cols-[1fr_0.8fr_1fr_0.6fr_1.2fr_2.2fr_2.2fr_0.8fr_0.8fr] min-w-[1400px] px-4 py-2";
+  "grid grid-cols-[1fr_0.8fr_1fr_0.8fr_1.2fr_2.2fr_2.2fr_0.8fr_0.8fr] min-w-[1400px] px-4 py-2";
 
 function TableHeader({ children, className }) {
   return (
@@ -92,99 +93,27 @@ function SatelliteTable() {
     </TableHeader>
   );
 
-  // console.log(satellites);
-
-  const rows = satellites.flatMap((satellite) => {
-    // console.log(satellite);
-    const isEditing = editingId === satellite.id;
-    const mainRow = [
-      // <img
-      //   key={`img-${satellite.id}`}
-      //   src="/"
-      //   alt={satellite.name}
-      //   className="h-8 w-8 object-contain"
-      // />,
-      satellite.img ? (
-        <div key={`img-${satellite.id}`}>
-          <img
-            src={satellite.img}
-            alt={satellite.id}
-            className="h-32 w-32 object-cover"
-          />
-        </div>
-      ) : (
-        <Satellite key={`img-${satellite.id}`} />
-      ),
-      <div key={`id-${satellite.id}`}>{satellite.norad_id}</div>,
-      <div key={`name-${satellite.id}`}>{satellite.name}</div>,
-      <div key={`cat-${satellite.id}`}>{satellite.category}</div>,
-      <div key={`date-${satellite.id}`}>{satellite.date}</div>,
-      <div key={`line1-${satellite.id}`}>{satellite.line1}</div>,
-      <div key={`line2-${satellite.id}`}>{satellite.line2}</div>,
-      <div key={`active-${satellite.id}`}>
-        {satellite.is_active ? (
-          <Button
-            className="pointer-events-none rounded-full bg-green-700"
-            size="sm"
-          >
-            <span>active</span>
-          </Button>
-        ) : (
-          <Button
-            className="pointer-events-none rounded-full bg-red-700"
-            size="sm"
-          >
-            offline
-          </Button>
-        )}
-      </div>,
-      <div key={`option-${satellite.id}`}>
-        <Button
-          size="sm"
-          variant="destructive"
-          onClick={() => mutate(satellite.id)}
-          disabled={isDeleting}
-        >
-          Delete
-        </Button>
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={() =>
-            setEditingId((id) => (id === satellite.id ? null : satellite.id))
-          }
-        >
-          {isEditing ? "Close" : "Edit"}
-        </Button>
-        {/* <ToastModal ref={toastRef}>
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() => aler()}
-            disabled={isDeleting}
-          >
-            Delete
-          </Button>
-        </ToastModal> */}
-      </div>,
-    ];
-
-    const editRow = [
-      <div className="col-span-full" key={`edit-${satellite.id}`}>
-        <CreateSatelliteForm satelliteToEdit={satellite}></CreateSatelliteForm>
-      </div>,
-    ];
-
-    return isEditing ? [mainRow, editRow] : [mainRow];
-  });
   return (
     <ToastModal ref={toastRef}>
-      <Table
-        role="table"
-        rows={rows}
-        header={headerContent}
-        className={columnstyle}
-      ></Table>
+      <Table role="table" header={headerContent} className={columnstyle}>
+        {satellites.map((satellite, index) => (
+          <div
+            key={satellite.id}
+            className={`${
+              index !== satellites.length - 1 ? "border-grey-100 border-b" : ""
+            }`}
+          >
+            <SatelliteRow
+              satellite={satellite}
+              editingId={editingId}
+              setEditingId={setEditingId}
+              mutate={mutate}
+              isDeleting={isDeleting}
+              className={columnstyle}
+            />
+          </div>
+        ))}
+      </Table>
     </ToastModal>
   );
 }
