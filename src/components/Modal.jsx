@@ -1,8 +1,9 @@
 import { X } from "lucide-react";
-import { createContext } from "react";
+import { createContext, forwardRef } from "react";
 import { cloneElement, useContext, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { useOutsideClick } from "@/hooks/useOutsideClick";
 import { Button } from "@/ui/button";
 
 const ModalConext = createContext();
@@ -34,27 +35,28 @@ function Overlay({ children }) {
   );
 }
 
-function StyleModal({ children }) {
+const StyleModal = forwardRef(({ children }, ref) => {
   return (
-    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[var(--border-radius-lg)] bg-[var(--color-grey-0)] px-16 py-12 shadow-[var(--shadow-lg)] transition-all duration-500">
+    <div
+      ref={ref}
+      className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[var(--border-radius-lg)] bg-[var(--color-grey-0)] px-16 py-12 shadow-[var(--shadow-lg)] transition-all duration-500"
+    >
       {children}
     </div>
   );
-}
+});
 
 function Window({ children, name }) {
   const { openName, close } = useContext(ModalConext);
+  const ref = useOutsideClick(close);
   if (name !== openName) return;
 
   return createPortal(
     <div>
-      {/* Overlay */}
-      {/* <div className="fixed inset-0 z-[1000] h-screen w-screen bg-[var(--backdrop-color)] backdrop-blur-sm transition-all duration-500"> */}
-
       <Overlay>
         {/* Modal */}
         {/* <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[var(--border-radius-lg)] bg-[var(--color-grey-0)] px-16 py-12 shadow-[var(--shadow-lg)] transition-all duration-500"> */}
-        <StyleModal>
+        <StyleModal ref={ref}>
           {/* Close Button */}
           <Button
             onClick={close}
