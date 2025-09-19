@@ -1,30 +1,7 @@
 import { X } from "lucide-react";
-import { createContext } from "react";
-import { cloneElement, useContext, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { Button } from "@/ui/button";
-
-const ModalConext = createContext();
-
-export function Modal({ children }) {
-  const [openName, setOpenName] = useState("");
-
-  const close = () => setOpenName("");
-  const open = setOpenName;
-
-  return (
-    <ModalConext.Provider value={{ openName, close, open }}>
-      {children}
-    </ModalConext.Provider>
-  );
-}
-
-function Open({ children, opens: opensWindowName }) {
-  const { open } = useContext(ModalConext);
-
-  return cloneElement(children, { onClick: () => open(opensWindowName) });
-}
 
 function Overlay({ children }) {
   return (
@@ -42,10 +19,7 @@ function StyleModal({ children }) {
   );
 }
 
-function Window({ children, name }) {
-  const { openName, close } = useContext(ModalConext);
-  if (name !== openName) return;
-
+export function Modal({ children, onClose }) {
   return createPortal(
     <div>
       {/* Overlay */}
@@ -57,7 +31,7 @@ function Window({ children, name }) {
         <StyleModal>
           {/* Close Button */}
           <Button
-            onClick={close}
+            onClick={onClose}
             size="sm"
             variant="destructive"
             className="absolute top-5 right-7 translate-x-3 rounded-[var(--border-radius-sm)] border-none bg-none p-1 transition-all duration-200 hover:bg-[var(--color-grey-100)]"
@@ -65,7 +39,7 @@ function Window({ children, name }) {
             <X className="h-6 w-6 text-[var(--color-grey-500)]" />
           </Button>
 
-          <div>{cloneElement(children, { onCloseModal: close })}</div>
+          <div>{children}</div>
         </StyleModal>
         {/* </div> */}
       </Overlay>
@@ -74,6 +48,3 @@ function Window({ children, name }) {
     // </div>
   );
 }
-
-Modal.Open = Open;
-Modal.Window = Window;

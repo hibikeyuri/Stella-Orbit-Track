@@ -1,27 +1,26 @@
-import { useState } from "react";
-
 import CreateSatelliteForm from "./CreateSatelliteForm";
+import SatelliteTable from "./SatelliteTable";
 
 import { Modal } from "@/components/Modal";
 import { Button } from "@/ui/button";
 
 function AddSatellite() {
-  const [isopenModal, setIsOpenModal] = useState(false);
   return (
-    <div>
-      <Button
-        onClick={() => {
-          setIsOpenModal((show) => !show);
-        }}
-      >
-        Add new Satellite
-      </Button>
-      {isopenModal && (
-        <Modal onClose={() => setIsOpenModal(false)}>
-          <CreateSatelliteForm onCloseModal={()=>setIsOpenModal(false)}></CreateSatelliteForm>
-        </Modal>
-      )}
-    </div>
+    <Modal>
+      <Modal.Open opens="satellite-form">
+        <Button>Add New Satellite</Button>
+      </Modal.Open>
+      <Modal.Window name="satellite-form">
+        <CreateSatelliteForm></CreateSatelliteForm>
+      </Modal.Window>
+
+      <Modal.Open opens="table">
+        <Button>Show Table</Button>
+      </Modal.Open>
+      <Modal.Window name="table">
+        <SatelliteTable></SatelliteTable>
+      </Modal.Window>
+    </Modal>  
   );
 }
 
