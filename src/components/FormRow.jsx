@@ -11,7 +11,7 @@ function FormRow({ label, error, children, orientation = "horizontal" }) {
     ? "grid grid-cols-1 gap-2"
     : hasButton
     ? "flex justify-end gap-3"
-    : "grid grid-cols-[0.3fr_0.6fr] gap-4";
+    : "grid grid-cols-[0.4fr_0.6fr] gap-4";
 
   return (
     <div
