@@ -1,17 +1,14 @@
-import { useState } from "react";
-
 import Heading from "../components/Heading";
 import Row from "../components/Row";
 import SatelliteTable from "../features/satellite/SatelliteTable";
 
+import AddSatellite from "@/features/satellite/AddSatellite";
 import CreateSatelliteForm from "@/features/satellite/CreateSatelliteForm";
-import { Button } from "@/ui/button";
 
 function Satellites() {
   // useEffect(function () {
   //   getSatellites().then((data) => console.log(data));
   // }, []);
-  const [showForm, setShowForm] = useState(false);
 
   return (
     <>
@@ -19,14 +16,7 @@ function Satellites() {
         <Heading as="h1">Satellites</Heading>
         <Heading as="h2">Test</Heading>
         <SatelliteTable />
-        <Button
-          onClick={() => {
-            setShowForm((show) => !show);
-          }}
-        >
-          Add new Satellite
-        </Button>
-        {showForm && <CreateSatelliteForm></CreateSatelliteForm>}
+        <AddSatellite />
       </Row>
     </>
   );

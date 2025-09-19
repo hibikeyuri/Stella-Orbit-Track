@@ -12,7 +12,7 @@ import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
 
-function CreateSatelliteForm({ satelliteToEdit = {} }) {
+function CreateSatelliteForm({ satelliteToEdit = {}, onCloseModal }) {
   const { id: editId, date: sourceDate, ...editValues } = satelliteToEdit;
   // console.log(sourceDate);
   // console.log(formatDateTimeLocalUTC(sourceDate));
@@ -52,6 +52,7 @@ function CreateSatelliteForm({ satelliteToEdit = {} }) {
         {
           onSuccess: () => {
             reset();
+            onCloseModal?.();
           },
         },
       );
@@ -59,6 +60,7 @@ function CreateSatelliteForm({ satelliteToEdit = {} }) {
       createSatellite(payload, {
         onSuccess: () => {
           reset();
+          onCloseModal?.();
         },
       });
     }
@@ -73,7 +75,7 @@ function CreateSatelliteForm({ satelliteToEdit = {} }) {
 
   return (
     <ToastModal ref={toastRef}>
-      <Form onSubmit={handleSubmit(onSubmit, onError)}>
+      <Form onSubmit={handleSubmit(onSubmit, onError)} type={onCloseModal ? "modal":"regular"}>
         <FormRow>
           <Label htmlFor="id" className="text-1xl">
             Satellite id<span className="text-destructive">*</span>
@@ -180,7 +182,12 @@ function CreateSatelliteForm({ satelliteToEdit = {} }) {
         </FormRow>
 
         <FormRow>
-          <Button type="reset" variant="secondary" size="lg">
+          <Button
+            type="reset"
+            variant="secondary"
+            size="lg"
+            onClick={() => onCloseModal?.()}
+          >
             Cancel
           </Button>
           <Button size="lg" type="submit" disabled={isWorking}>
