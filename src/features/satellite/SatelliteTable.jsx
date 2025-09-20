@@ -13,8 +13,8 @@ import { useSatellites } from "./useSatellites";
 import ToastModal from "@/components/ToastModal";
 import { Button } from "@/ui/button";
 
-const columnstyle =
-  "grid grid-cols-[1fr_0.8fr_1fr_0.8fr_1.2fr_2.2fr_2.2fr_0.8fr_0.8fr] min-w-[1400px] px-4 py-2";
+// const columnstyle =
+//   "grid grid-cols-[1fr_0.8fr_1fr_0.8fr_1.2fr_2.2fr_2.2fr_0.8fr_0.8fr] min-w-[1400px] px-4 py-2";
 
 function TableHeader({ children, className }) {
   return (
@@ -35,39 +35,34 @@ function SatelliteTable() {
 
   if (error) return;
   if (isLoading) return <Spinner />;
-
-  const headerContent = (
-    <TableHeader role="row" className={columnstyle}>
-      {/* const {img, norad_id, name, category, line1, line2, is_active} = satellite; */}
-      <div>img</div>
-      <div>norad_id</div>
-      <div>name</div>
-      <div>category</div>
-      <div>TLE</div>
-      <div>line1</div>
-      <div>line2</div>
-      <div>active</div>
-      <div>operation</div>
-    </TableHeader>
-  );
-
+  console.log(satellites);
   return (
-    <Table role="table" header={headerContent} className={columnstyle}>
-      {satellites.map((satellite, index) => (
-        <div
-          key={satellite.id}
-          className={`${
-            index !== satellites.length - 1 ? "border-grey-100 border-b" : ""
-          }`}
-        >
-          <SatelliteRow
-            satellite={satellite}
-            editingId={editingId}
-            setEditingId={setEditingId}
-            className={columnstyle}
-          />
-        </div>
-      ))}
+    <Table columns="grid-cols-[1fr_0.8fr_1fr_0.8fr_1.2fr_2.2fr_2.2fr_0.8fr_0.8fr]">
+      <Table.Header>
+        {/* const {img, norad_id, name, category, line1, line2, is_active} = satellite; */}
+        <div>img</div>
+        <div>norad_id</div>
+        <div>name</div>
+        <div>category</div>
+        <div>TLE</div>
+        <div>line1</div>
+        <div>line2</div>
+        <div>active</div>
+        <div>operation</div>
+      </Table.Header>
+
+      <Table.Body
+        data={satellites}
+        render={(satellite) => (
+          <div key={satellite.id}>
+            <SatelliteRow
+              satellite={satellite}
+              editingId={editingId}
+              setEditingId={setEditingId}
+            />
+          </div>
+        )}
+      />
     </Table>
   );
 }

@@ -6,15 +6,11 @@ import { useDeleteSatellite } from "./useDeleteSatellite";
 
 import ConfirmDelete from "@/components/ConfirmDelete";
 import { Modal } from "@/components/Modal";
+import { Table } from "@/components/Table";
 import ToastModal from "@/components/ToastModal";
 import { Button } from "@/ui/button";
 
-export function SatelliteRow({
-  satellite,
-  editingId,
-  setEditingId,
-  className,
-}) {
+export function SatelliteRow({ satellite, editingId, setEditingId }) {
   const { id, norad_id, name, category, date, line1, line2, img, is_active } =
     satellite;
   const isEditing = editingId === id;
@@ -41,7 +37,8 @@ export function SatelliteRow({
   return (
     <ToastModal ref={toastRef}>
       {/* Main row */}
-      <div className={className}>
+      {/* 原本吃外面進來的 classname */}
+      <Table.Row>
         <div>
           {img ? (
             <img src={img} alt={id} className="h-32 w-32 object-cover" />
@@ -74,16 +71,12 @@ export function SatelliteRow({
 
           {/* Delete row */}
           <Modal>
-            <Modal.Open>
-              <Button
-                size="sm"
-                variant="destructive"
-                disabled={isDeleting}
-              >
+            <Modal.Open opens="delete">
+              <Button size="sm" variant="destructive" disabled={isDeleting}>
                 Delete
               </Button>
             </Modal.Open>
-            <Modal.Window>
+            <Modal.Window name="delete">
               <ConfirmDelete
                 resource="satellites"
                 disabled={isDeleting}
@@ -110,7 +103,7 @@ export function SatelliteRow({
             </Modal.Window>
           </Modal>
         </div>
-      </div>
+      </Table.Row>
     </ToastModal>
   );
 }
