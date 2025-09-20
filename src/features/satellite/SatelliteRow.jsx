@@ -4,6 +4,8 @@ import CreateSatelliteForm from "./CreateSatelliteForm";
 import { useCreateSatellite } from "./useCreateSatellite";
 import { useDeleteSatellite } from "./useDeleteSatellite";
 
+import ConfirmDelete from "@/components/ConfirmDelete";
+import { Modal } from "@/components/Modal";
 import ToastModal from "@/components/ToastModal";
 import { Button } from "@/ui/button";
 
@@ -13,7 +15,8 @@ export function SatelliteRow({
   setEditingId,
   className,
 }) {
-  const { id, norad_id, name, category, date, line1, line2, img, is_active } = satellite;
+  const { id, norad_id, name, category, date, line1, line2, img, is_active } =
+    satellite;
   const isEditing = editingId === id;
 
   const { toastRef, isDeleting, deleteSatellite } = useDeleteSatellite();
@@ -64,33 +67,50 @@ export function SatelliteRow({
         </div>
 
         <div>
+          {/* Copy row */}
           <Button size="sm" variant="secondary" onClick={handleDuplicate}>
             Duplicate
           </Button>
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() => deleteSatellite(id)}
-            disabled={isDeleting}
-          >
-            Delete
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => setEditingId(isEditing ? null : id)}
-          >
-            {isEditing ? "Close" : "Edit"}
-          </Button>
+
+          {/* Delete row */}
+          <Modal>
+            <Modal.Open>
+              <Button
+                size="sm"
+                variant="destructive"
+                disabled={isDeleting}
+              >
+                Delete
+              </Button>
+            </Modal.Open>
+            <Modal.Window>
+              <ConfirmDelete
+                resource="satellites"
+                disabled={isDeleting}
+                onConfirm={() => deleteSatellite(id)}
+              ></ConfirmDelete>
+            </Modal.Window>
+          </Modal>
+
+          {/* Edit row */}
+          <Modal>
+            <Modal.Open opens="edit">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setEditingId(isEditing ? null : id)}
+              >
+                {isEditing ? "Close" : "Edit"}
+              </Button>
+            </Modal.Open>
+            <Modal.Window name="edit">
+              <CreateSatelliteForm
+                satelliteToEdit={satellite}
+              ></CreateSatelliteForm>
+            </Modal.Window>
+          </Modal>
         </div>
       </div>
-
-      {/* Edit row */}
-      {isEditing && (
-        <div className="col-span-full">
-          <CreateSatelliteForm satelliteToEdit={satellite} />
-        </div>
-      )}
     </ToastModal>
   );
 }
