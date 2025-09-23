@@ -2,8 +2,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { updateSettings } from "./apiSettings";
 
-export function useUpdateSetting(toastRef) {
+import { useToast } from "@/hooks/useToast";
+
+export function useUpdateSetting() {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   const updateInfo = {
     title: "Setting Successfully Updated!",
@@ -11,29 +14,16 @@ export function useUpdateSetting(toastRef) {
     type: "success",
   };
 
-  const showSuccess = (info) => {
-    console.log(toastRef.current);
-    toastRef.current?.openToast(info);
-  };
-
-  const showError = (err) => {
-    toastRef.current?.openToast({
-      title: err.message,
-      description: "error",
-      type: "error",
-    });
-  };
-
   const { mutate: updateSetting, isLoading: isUpdating } = useMutation({
     mutationFn: updateSettings,
     onSuccess: () => {
-      showSuccess(updateInfo);
+      toast.success(updateInfo.title, updateInfo.description);
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ["settings"] });
-      }, 2000);
+      });
     },
     onError: (err) => {
-      showError(err);
+      toast.error(err.message, "Error");
     },
   });
   return { isUpdating, updateSetting };
