@@ -1,9 +1,18 @@
-import { useContext } from "react";
+import { createContext, useContext } from "react";
 
-import { ToastContext } from "@/components/ToastContext";
+export const ToastContext = createContext(null);
 
 export function useToast() {
   const ctx = useContext(ToastContext);
   if (!ctx) throw new Error("useToast must used in <ToastContextProvider>");
-  return ctx;
+
+  return {
+    success: (title, description) =>
+      ctx.show({ title, description, type: "success" }),
+    error: (title, description) =>
+      ctx.show({ title, description, type: "error" }),
+    info: (title, description) =>
+      ctx.show({ title, description, type: "info" }),
+    hide: ctx.hide,
+  };
 }
