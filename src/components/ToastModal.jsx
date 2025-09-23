@@ -2,6 +2,7 @@ import { Description } from "@radix-ui/react-toast";
 import { CircleCheckIcon, CircleXIcon, XIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { forwardRef, useImperativeHandle } from "react";
+import { createPortal } from "react-dom";
 
 import { Button } from "@/ui/button";
 import {
@@ -154,57 +155,58 @@ const ToastModal = forwardRef((props, ref) => {
   const currentBarColor = iconMap[toastData.type]?.color;
 
   return (
-    <ToastProvider swipeDirection="left" children>
-      {/* <Button variant="outline" onClick={handleButtonClick}>
-        Custom toast
-      </Button> */}
+    <ToastProvider swipeDirection="left">
       {children}
-      <Toast
-        open={open}
-        onOpenChange={handleOpenChange}
-        onPause={pause}
-        onResume={resume}
-      >
-        <div className="flex w-full justify-between gap-3">
-          {currentIcon}
-          <div className="flex grow flex-col gap-3">
-            <div className="space-y-1">
-              <ToastTitle>{toastData.title}</ToastTitle>
-              <ToastDescription>{toastData.description}</ToastDescription>
-            </div>
-            {toastData.type === "success" ? (
-              <div>
-                <ToastAction altText="Undo changes" asChild>
-                  <Button size="sm">Undo</Button>
-                </ToastAction>
+
+      {createPortal(
+        <>
+          <Toast
+            open={open}
+            onOpenChange={handleOpenChange}
+            onPause={pause}
+            onResume={resume}
+          >
+            <div className="flex w-full justify-between gap-3">
+              {currentIcon}
+              <div className="flex grow flex-col gap-3">
+                <div className="space-y-1">
+                  <ToastTitle>{toastData.title}</ToastTitle>
+                  <ToastDescription>{toastData.description}</ToastDescription>
+                </div>
+                {toastData.type === "success" && (
+                  <ToastAction altText="Undo changes" asChild>
+                    <Button size="sm">Undo</Button>
+                  </ToastAction>
+                )}
               </div>
-            ) : null}
-          </div>
-          <ToastClose asChild>
-            <Button
-              variant="ghost"
-              className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
-              aria-label="Close notification"
-            >
-              <XIcon
-                size={16}
-                className="opacity-60 transition-opacity group-hover:opacity-100"
-                aria-hidden="true"
+              <ToastClose asChild>
+                <Button
+                  variant="ghost"
+                  className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
+                  aria-label="Close notification"
+                >
+                  <XIcon
+                    size={16}
+                    className="opacity-60 transition-opacity group-hover:opacity-100"
+                    aria-hidden="true"
+                  />
+                </Button>
+              </ToastClose>
+            </div>
+            <div className="contents" aria-hidden="true">
+              <div
+                className={`pointer-events-none absolute bottom-0 left-0 h-1 w-full ${currentBarColor}`}
+                style={{
+                  width: `${(progress / toastDuration) * 100}%`,
+                  transition: "width 100ms linear",
+                }}
               />
-            </Button>
-          </ToastClose>
-        </div>
-        <div className="contents" aria-hidden="true">
-          <div
-            className={`pointer-events-none absolute bottom-0 left-0 h-1 w-full ${currentBarColor}`}
-            style={{
-              width: `${(progress / toastDuration) * 100}%`,
-              transition: "width 100ms linear",
-            }}
-          />
-        </div>
-      </Toast>
-      <ToastViewport className="sm:right-auto sm:left-0" />
+            </div>
+          </Toast>
+          <ToastViewport className="sm:right-auto sm:left-0" />
+        </>,
+        document.body,
+      )}
     </ToastProvider>
   );
 });

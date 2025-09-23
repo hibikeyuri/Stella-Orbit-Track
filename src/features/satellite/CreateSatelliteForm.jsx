@@ -1,4 +1,3 @@
-import { useRef } from "react";
 import { useForm } from "react-hook-form";
 
 import { useCreateSatellite } from "./useCreateSatellite";
@@ -18,10 +17,8 @@ function CreateSatelliteForm({ satelliteToEdit = {}, onCloseModal }) {
   // console.log(formatDateTimeLocalUTC(sourceDate));
   const isEditSession = Boolean(editId);
 
-  const toastRef = useRef();
-
-  const { isCreating, createSatellite } = useCreateSatellite(toastRef);
-  const { isEditing, editSatellite } = useEditSatellite(toastRef);
+  const { isCreating, createSatellite } = useCreateSatellite();
+  const { isEditing, editSatellite } = useEditSatellite();
 
   const isWorking = isCreating || isEditing;
 
@@ -74,128 +71,129 @@ function CreateSatelliteForm({ satelliteToEdit = {}, onCloseModal }) {
   }
 
   return (
-    <ToastModal ref={toastRef}>
-      <Form onSubmit={handleSubmit(onSubmit, onError)} type={onCloseModal ? "modal":"regular"}>
-        <FormRow>
-          <Label htmlFor="id" className="text-1xl">
-            Satellite id<span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="id"
-            type="number"
-            {...register("id", { required: "This field is required" })}
-            aria-invalid={!!errors?.id?.message}
-          ></Input>
-          {errors?.id?.message && (
-            <p
-              className="text-destructive mt-2 text-xs"
-              role="alert"
-              aria-live="polite"
-            >
-              Satellite id is invaid
-            </p>
-          )}
-        </FormRow>
-
-        <FormRow>
-          <Label htmlFor="norad_id" className="text-1xl">
-            Satellite norad id<span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="norad_id"
-            type="number"
-            {...register("norad_id", { required: "This field is required" })}
-            aria-invalid={!!errors?.norad_id?.message}
-          ></Input>
-          {errors?.norad_id?.message && (
-            <p
-              className="text-destructive mt-2 text-xs"
-              role="alert"
-              aria-live="polite"
-            >
-              Satellite id is invaid
-            </p>
-          )}
-        </FormRow>
-
-        <FormRow>
-          <Label htmlFor="name" className="text-1xl">
-            Satellite name
-          </Label>
-          <Input id="name" type="text" {...register("name")}></Input>
-        </FormRow>
-
-        <FormRow>
-          <Label htmlFor="date" className="text-1xl">
-            TLE Data Time
-          </Label>
-          <Input
-            id="date"
-            type="datetime-local"
-            step="1"
-            {...register("date")}
-          ></Input>
-        </FormRow>
-
-        <FormRow>
-          <Label htmlFor="category" className="text-1xl">
-            Satellite category
-          </Label>
-          <Input id="category" type="text" {...register("category")}></Input>
-        </FormRow>
-
-        <FormRow>
-          <Label htmlFor="line1" className="text-1xl">
-            Satellite TLE line1
-          </Label>
-          <Input id="line1" type="text" {...register("line1")}></Input>
-        </FormRow>
-
-        <FormRow>
-          <Label htmlFor="line2" className="text-1xl">
-            Satellite TLE line2
-          </Label>
-          <Input id="line2" type="text" {...register("line2")}></Input>
-        </FormRow>
-
-        <FormRow>
-          <Label htmlFor="is_active" className="text-1xl">
-            Satellite avtive status
-          </Label>
-          <Input
-            id="is_active"
-            type="checkbox"
-            {...register("is_active")}
-          ></Input>
-        </FormRow>
-
-        <FormRow>
-          <Label htmlFor="img" className="text-1xl">
-            Satellite Image
-          </Label>
-          <Input
-            id="img"
-            accept="image/*"
-            type="file"
-            {...register("img")}
-          ></Input>
-        </FormRow>
-
-        <FormRow>
-          <Button
-            type="reset"
-            variant="secondary"
-            size="lg"
-            onClick={() => onCloseModal?.()}
+    <Form
+      onSubmit={handleSubmit(onSubmit, onError)}
+      type={onCloseModal ? "modal" : "regular"}
+    >
+      <FormRow>
+        <Label htmlFor="id" className="text-1xl">
+          Satellite id<span className="text-destructive">*</span>
+        </Label>
+        <Input
+          id="id"
+          type="number"
+          {...register("id", { required: "This field is required" })}
+          aria-invalid={!!errors?.id?.message}
+        ></Input>
+        {errors?.id?.message && (
+          <p
+            className="text-destructive mt-2 text-xs"
+            role="alert"
+            aria-live="polite"
           >
-            Cancel
-          </Button>
-          <Button size="lg" type="submit" disabled={isWorking}>
-            {isEditSession ? "Edit Satellite" : "Create New Satellite"}
-          </Button>
-        </FormRow>
-      </Form>
-    </ToastModal>
+            Satellite id is invaid
+          </p>
+        )}
+      </FormRow>
+
+      <FormRow>
+        <Label htmlFor="norad_id" className="text-1xl">
+          Satellite norad id<span className="text-destructive">*</span>
+        </Label>
+        <Input
+          id="norad_id"
+          type="number"
+          {...register("norad_id", { required: "This field is required" })}
+          aria-invalid={!!errors?.norad_id?.message}
+        ></Input>
+        {errors?.norad_id?.message && (
+          <p
+            className="text-destructive mt-2 text-xs"
+            role="alert"
+            aria-live="polite"
+          >
+            Satellite id is invaid
+          </p>
+        )}
+      </FormRow>
+
+      <FormRow>
+        <Label htmlFor="name" className="text-1xl">
+          Satellite name
+        </Label>
+        <Input id="name" type="text" {...register("name")}></Input>
+      </FormRow>
+
+      <FormRow>
+        <Label htmlFor="date" className="text-1xl">
+          TLE Data Time
+        </Label>
+        <Input
+          id="date"
+          type="datetime-local"
+          step="1"
+          {...register("date")}
+        ></Input>
+      </FormRow>
+
+      <FormRow>
+        <Label htmlFor="category" className="text-1xl">
+          Satellite category
+        </Label>
+        <Input id="category" type="text" {...register("category")}></Input>
+      </FormRow>
+
+      <FormRow>
+        <Label htmlFor="line1" className="text-1xl">
+          Satellite TLE line1
+        </Label>
+        <Input id="line1" type="text" {...register("line1")}></Input>
+      </FormRow>
+
+      <FormRow>
+        <Label htmlFor="line2" className="text-1xl">
+          Satellite TLE line2
+        </Label>
+        <Input id="line2" type="text" {...register("line2")}></Input>
+      </FormRow>
+
+      <FormRow>
+        <Label htmlFor="is_active" className="text-1xl">
+          Satellite avtive status
+        </Label>
+        <Input
+          id="is_active"
+          type="checkbox"
+          {...register("is_active")}
+        ></Input>
+      </FormRow>
+
+      <FormRow>
+        <Label htmlFor="img" className="text-1xl">
+          Satellite Image
+        </Label>
+        <Input
+          id="img"
+          accept="image/*"
+          type="file"
+          {...register("img")}
+        ></Input>
+      </FormRow>
+
+      <FormRow>
+        <Button
+          type="reset"
+          variant="secondary"
+          size="lg"
+          onClick={() => onCloseModal?.()}
+        >
+          Cancel
+        </Button>
+        <Button size="lg" type="submit" disabled={isWorking}>
+          {isEditSession ? "Edit Satellite" : "Create New Satellite"}
+        </Button>
+      </FormRow>
+    </Form>
   );
 }
 

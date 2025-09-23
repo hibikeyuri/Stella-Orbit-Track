@@ -1,41 +1,31 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRef } from "react";
 
+import { useToast } from "@/hooks/useToast";
 import { deleteSatellites } from "@/services/apiSatellites";
 
 export function useDeleteSatellite() {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
-  const toastRef = useRef();
-
-  const showSuccess = () => {
-    console.log(toastRef.current);
-    toastRef.current?.openToast({
-      title: "Satellite successfully deleted!",
-      description: "request is completed",
-      type: "success",
-    });
-  };
-
-  const showError = (err) => {
-    toastRef.current?.openToast({
-      title: err.message,
-      description: "error",
-      type: "error",
-    });
+  const deleteInfo = {
+    title: "Satellite Successfully deleted!",
+    description: "Request Completed",
+    type: "success",
   };
 
   const { isLoading: isDeleting, mutate: deleteSatellite } = useMutation({
     mutationFn: deleteSatellites,
     onSuccess: () => {
-      // toast.success("Satellite successfully deleted!");
-      showSuccess();
+      toast.success(deleteInfo.title, deleteInfo.description);
+
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ["satellites"] });
-      }, 2000);
+      });
     },
-    onError: (err) => showError(err.message),
+    onError: (err) => {
+      toast.error(err.message, "Error");
+    },
   });
 
-  return { toastRef, isDeleting, deleteSatellite };
+  return { isDeleting, deleteSatellite };
 }

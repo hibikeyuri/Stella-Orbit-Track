@@ -1,37 +1,26 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { useToast } from "@/hooks/useToast";
 import { createSatellites } from "@/services/apiSatellites";
 
-export function useCreateSatellite(toastRef) {
+export function useCreateSatellite() {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   const createInfo = {
     title: "Satellite Successfully Created!",
-    description: "request is completed",
+    description: "Request Completed",
     type: "success",
-  };
-
-  const showSuccess = (info) => {
-    console.log(toastRef.current);
-    toastRef.current?.openToast(info);
-  };
-
-  const showError = (err) => {
-    toastRef.current?.openToast({
-      title: err.message,
-      description: "error",
-      type: "error",
-    });
   };
 
   const { mutate: createSatellite, isLoading: isCreating } = useMutation({
     mutationFn: createSatellites,
     onSuccess: () => {
-      showSuccess(createInfo);
+      toast.success(createInfo.title, createInfo.description);
       queryClient.invalidateQueries({ queryKey: ["satellites"] });
     },
     onError: (err) => {
-      showError(err);
+      toast.error(err.message, "Request failed");
     },
   });
 
