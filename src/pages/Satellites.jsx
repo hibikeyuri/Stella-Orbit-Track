@@ -4,6 +4,7 @@ import SatelliteTable from "../features/satellite/SatelliteTable";
 
 import AddSatellite from "@/features/satellite/AddSatellite";
 import CreateSatelliteForm from "@/features/satellite/CreateSatelliteForm";
+import SatelliteTableOperations from "@/features/satellite/SatelliteTableOperations";
 
 function Satellites() {
   // useEffect(function () {
@@ -12,9 +13,12 @@ function Satellites() {
 
   return (
     <>
-      <Row>
+      <Row type="horizontal">
         <Heading as="h1">Satellites</Heading>
-        <Heading as="h2">Test</Heading>
+        <SatelliteTableOperations />
+      </Row>
+
+      <Row>
         <SatelliteTable />
         <AddSatellite />
       </Row>
