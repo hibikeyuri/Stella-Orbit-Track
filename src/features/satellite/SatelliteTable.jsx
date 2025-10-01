@@ -35,9 +35,9 @@ function SatelliteTable() {
 
   if (error) return;
   if (isLoading) return <Spinner />;
-  console.log(satellites);
+  // console.log(satellites);
   return (
-    <Table columns="grid-cols-[1fr_0.8fr_1fr_0.8fr_1.2fr_2.2fr_2.2fr_0.8fr_0.8fr]">
+    <Table columns="grid-cols-[1fr_0.8fr_1fr_0.8fr_1.2fr_2.2fr_2.2fr_0.8fr_1.4fr]">
       <Table.Header>
         {/* const {img, norad_id, name, category, line1, line2, is_active} = satellite; */}
         <div>img</div>

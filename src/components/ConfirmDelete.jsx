@@ -17,7 +17,7 @@ function ConfirmDelete({ resource, onConfirm, disabled, onCloseModal }) {
           Cancel
         </Button>
         {/* Close Modal and Delete row by prop: onConfirm */}
-        <Button variant="destructive" onClick={onConfirm} disabled={disabled} onClick={onConfirm}>
+        <Button variant="destructive" onClick={onConfirm} disabled={disabled}>
           Delete
         </Button>
       </div>

@@ -28,10 +28,18 @@ export async function createSatellites(satellite, id) {
 
   // 前置查詢
   let query = supabase.from("satellites");
+  console.log("from apiSatellites.js");
   console.log(satellite);
+  console.log(hasImagePath);
 
   // 新增
-  if (!id) query = query.insert([{ ...satellite, img: imagePath }]);
+  if (!id) {
+    if (hasImagePath) {
+      query = query.insert([{ ...satellite, img: imagePath }]);
+    } else {
+      query = query.insert([{ ...satellite, img: ""}]);
+    }
+  }
 
   // 修改
   if (id) {

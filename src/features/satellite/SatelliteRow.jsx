@@ -5,6 +5,8 @@ import { useCreateSatellite } from "./useCreateSatellite";
 import { useDeleteSatellite } from "./useDeleteSatellite";
 
 import ConfirmDelete from "@/components/ConfirmDelete";
+import Menus from "@/components/Menus";
+import Menusv1 from "@/components/Menusv1";
 import { Modal } from "@/components/Modal";
 import { Table } from "@/components/Table";
 import { Button } from "@/ui/button";
@@ -19,11 +21,12 @@ export function SatelliteRow({ satellite, editingId, setEditingId }) {
 
   function handleDuplicate() {
     const { id, norad_id, ...rest } = satellite;
-
+    console.log(satellite);
     const newSatellite = {
       ...rest,
       id: id + 1,
       norad_id: norad_id + 1,
+      img: img ?? "",
     };
 
     createSatellite(newSatellite, {
@@ -59,16 +62,45 @@ export function SatelliteRow({ satellite, editingId, setEditingId }) {
         </Button>
       </div>
 
-      <div>
+      <div className="flex">
         {/* Copy row */}
-        <Button size="sm" variant="secondary" onClick={handleDuplicate}>
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={handleDuplicate}
+          className="w-14"
+        >
           Duplicate
         </Button>
+
+        {/* Edit row */}
+        <Modal>
+          <Modal.Open opens="edit">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setEditingId(isEditing ? null : id)}
+              className="w-14"
+            >
+              {isEditing ? "Close" : "Edit"}
+            </Button>
+          </Modal.Open>
+          <Modal.Window name="edit">
+            <CreateSatelliteForm
+              satelliteToEdit={satellite}
+            ></CreateSatelliteForm>
+          </Modal.Window>
+        </Modal>
 
         {/* Delete row */}
         <Modal>
           <Modal.Open opens="delete">
-            <Button size="sm" variant="destructive" disabled={isDeleting}>
+            <Button
+              size="sm"
+              variant="destructive"
+              disabled={isDeleting}
+              className="w-14"
+            >
               Delete
             </Button>
           </Modal.Open>
@@ -81,22 +113,58 @@ export function SatelliteRow({ satellite, editingId, setEditingId }) {
           </Modal.Window>
         </Modal>
 
-        {/* Edit row */}
         <Modal>
-          <Modal.Open opens="edit">
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setEditingId(isEditing ? null : id)}
-            >
-              {isEditing ? "Close" : "Edit"}
-            </Button>
-          </Modal.Open>
-          <Modal.Window name="edit">
-            <CreateSatelliteForm
-              satelliteToEdit={satellite}
-            ></CreateSatelliteForm>
-          </Modal.Window>
+          <Menusv1>
+            {/* Dropdown Toggle */}
+            <Menusv1.Toggle id={id} />
+
+            {/* Dropdown List */}
+            <Menusv1.List id={id}>
+              {/* Duplicate */}
+              <Menusv1.Button
+                size="sm"
+                variant="secondary"
+                onClick={handleDuplicate}
+                className="w-16"
+              >
+                Duplicate
+              </Menusv1.Button>
+
+              {/* Edit -> Modal */}
+              <Modal.Open opens={"edit"}>
+                <Menusv1.Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setEditingId(isEditing ? null : id)}
+                  className="w-16"
+                >
+                  {isEditing ? "Close" : "Edit"}
+                </Menusv1.Button>
+              </Modal.Open>
+              <Modal.Window name={"edit"}>
+                <CreateSatelliteForm satelliteToEdit={satellite} />
+              </Modal.Window>
+
+              {/* Delete -> Modal */}
+              <Modal.Open opens={"delete"}>
+                <Menusv1.Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={isDeleting}
+                  className="w-16"
+                >
+                  Delete
+                </Menusv1.Button>
+              </Modal.Open>
+              <Modal.Window name={"delete"}>
+                <ConfirmDelete
+                  resource="satellites"
+                  disabled={isDeleting || isCreating}
+                  onConfirm={() => deleteSatellite(id)}
+                />
+              </Modal.Window>
+            </Menusv1.List>
+          </Menusv1>
         </Modal>
       </div>
     </Table.Row>
