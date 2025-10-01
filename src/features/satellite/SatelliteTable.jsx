@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { AlertTriangle, Satellite } from "lucide-react";
-import React, { useState } from "react";
-// import toast from "react-hot-toast";
+import { useState } from "react";
+import { useSearchParams } from "react-router";
 
 import Spinner from "../../components/Spinner";
 import { Table } from "../../components/Table";
@@ -32,9 +32,24 @@ function SatelliteTable() {
   const [editingId, setEditingId] = useState(null);
 
   const { isLoading, error, satellites } = useSatellites();
+  const [searchParams] = useSearchParams();
 
   if (error) return;
   if (isLoading) return <Spinner />;
+
+  const fileterValue = searchParams.get("is_active") || "all";
+
+  let filteredSatellites;
+  if (fileterValue === "all") filteredSatellites = satellites;
+  if (fileterValue === "active")
+    filteredSatellites = satellites.filter(
+      (satellite) => satellite.is_active === true,
+    );
+  if (fileterValue === "non-active")
+    filteredSatellites = satellites.filter(
+      (satellite) => satellite.is_active === false,
+    );
+
   // console.log(satellites);
   return (
     <Table columns="grid-cols-[1fr_0.8fr_1fr_0.8fr_1.2fr_2.2fr_2.2fr_0.8fr_1.4fr]">
@@ -52,7 +67,7 @@ function SatelliteTable() {
       </Table.Header>
 
       <Table.Body
-        data={satellites}
+        data={filteredSatellites}
         render={(satellite) => (
           <div key={satellite.id}>
             <SatelliteRow
