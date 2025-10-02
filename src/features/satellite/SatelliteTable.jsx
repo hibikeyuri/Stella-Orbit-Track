@@ -37,6 +37,7 @@ function SatelliteTable() {
   if (error) return;
   if (isLoading) return <Spinner />;
 
+  // 1. FILTER
   const fileterValue = searchParams.get("is_active") || "all";
 
   let filteredSatellites;
@@ -49,6 +50,40 @@ function SatelliteTable() {
     filteredSatellites = satellites.filter(
       (satellite) => satellite.is_active === false,
     );
+
+  // 2. SORTING
+  const sortBy = searchParams.get("sortBy") || "";
+
+  function sortByField(arr, sortBy) {
+    const [field, direction] = sortBy.split("-");
+    const modifier = direction === "asc" ? 1 : -1;
+
+    return [...arr].sort((a, b) => {
+      const valA = a[field];
+      const valB = b[field];
+
+      // number compare
+      if (typeof valA === "number" && typeof valB === "number") {
+        return (valA - valB) * modifier;
+      }
+
+      // date string compare
+      const dateA = new Date(valA);
+      const dateB = new Date(valB);
+      if (!isNaN(dateA) && !isNaN(dateB)) {
+        return (dateA - dateB) * modifier;
+      }
+
+      // normal string compare
+      if (typeof valA === "string" && typeof valB === "string") {
+        return valA.localeCompare(valB) * modifier;
+      }
+
+      // fallback
+      return 0;
+    });
+  }
+  const sortedSatellites = sortByField(filteredSatellites, sortBy);
 
   // console.log(satellites);
   return (
@@ -67,7 +102,7 @@ function SatelliteTable() {
       </Table.Header>
 
       <Table.Body
-        data={filteredSatellites}
+        data={sortedSatellites}
         render={(satellite) => (
           <div key={satellite.id}>
             <SatelliteRow

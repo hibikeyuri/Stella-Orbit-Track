@@ -11,11 +11,7 @@ export function Filter({ filterFileds, options, defaultValue }) {
   }
 
   return (
-    <Tabs
-      defaultValue={defaultValue}
-      onValueChange={handleClick}
-      className="w-full"
-    >
+    <Tabs defaultValue={defaultValue} onValueChange={handleClick}>
       <TabsList className="border-grey-100 bg-grey-0 flex gap-1 rounded-sm border p-1 shadow-sm">
         {options.map((opt) => (
           <TabsTrigger
@@ -27,12 +23,6 @@ export function Filter({ filterFileds, options, defaultValue }) {
           </TabsTrigger>
         ))}
       </TabsList>
-
-      {options.map((opt) => (
-        <TabsContent key={opt.value} value={opt.value}>
-          {opt.content || null}
-        </TabsContent>
-      ))}
     </Tabs>
   );
 }
