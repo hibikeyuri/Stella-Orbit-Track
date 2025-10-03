@@ -6,6 +6,7 @@ import { Table } from "../../components/Table";
 import TleRow from "./TleRow";
 import { useTles } from "./useTles";
 
+import Paginations from "@/components/Paginations";
 import ToastModal from "@/components/ToastModal";
 import { Button } from "@/ui/button";
 
@@ -42,6 +43,10 @@ function TleTable() {
           </div>
         )}
       />
+
+      <Table.Footer>
+        <Paginations count={45} />
+      </Table.Footer>
     </Table>
   );
 }

@@ -42,7 +42,7 @@ function StyledHeader({ children, columns, role = "row" }) {
 
 function StyledBody({ children }) {
   return (
-    <section className="bg-grey-0 my-1 min-w-[1400px]">{children}</section>
+    <div className="bg-grey-0 my-1 min-w-[1400px]">{children}</div>
   );
 }
 
@@ -56,9 +56,9 @@ function Footer({ children }) {
   if (!children) return null;
 
   return (
-    <footer className="bg-grey-50 flex justify-center px-6 py-3">
+    <div className="bg-grey-50 flex justify-center px-6 py-3">
       {children}
-    </footer>
+    </div>
   );
 }
 
