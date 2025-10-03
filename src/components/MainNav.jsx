@@ -1,5 +1,11 @@
 import clsx from "clsx";
-import { LayoutDashboard, SatelliteDish, Users, Settings } from "lucide-react";
+import {
+  LayoutDashboard,
+  SatelliteDish,
+  Users,
+  Settings,
+  Antenna,
+} from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 // 自訂 Span component，處理 isActive 狀態與 className 合併
@@ -17,6 +23,7 @@ function MainNav() {
   const links = [
     { to: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
     { to: "/satellites", icon: <SatelliteDish />, label: "Satellites" },
+    { to: "/tles", icon: <Antenna />, label: "Tles" },
     { to: "/users", icon: <Users />, label: "Users" },
     { to: "/settings", icon: <Settings />, label: "Settings" },
   ];

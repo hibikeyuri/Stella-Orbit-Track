@@ -7,6 +7,7 @@ import Heading from "./components/Heading.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Satellites from "./pages/Satellites.jsx";
 import Settings from "./pages/Settings.jsx";
+import Tles from "./pages/Tles.jsx";
 import Users from "./pages/Users.jsx";
 
 import { Toaster } from "@/components/Toaster.jsx";
@@ -33,6 +34,7 @@ function App() {
               />
               <Route path="dashboard" element={<Dashboard></Dashboard>} />
               <Route path="Satellites" element={<Satellites></Satellites>} />
+              <Route path="TLEs" element={<Tles></Tles>} />
               <Route path="Users" element={<Users></Users>} />
               <Route path="Settings" element={<Settings></Settings>} />
             </Route>
