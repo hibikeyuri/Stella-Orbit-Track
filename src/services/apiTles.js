@@ -1,9 +1,12 @@
 import supabase from "./supabase";
 
 import { computeTleParams } from "@/utils/algo-satellites";
+import { PAGE_SISE } from "@/utils/constants";
 
-export async function getTles({ filter }) {
-  let query = supabase.from("tles").select("*, satellites(line1, line2)");
+export async function getTles({ filter, page }) {
+  let query = supabase
+    .from("tles")
+    .select("*, satellites(line1, line2)", { count: "exact" });
 
   if (filter !== null) {
     if (filter.value === "leo") query = query.lt(filter.field, 6371 + 2000);
@@ -14,16 +17,21 @@ export async function getTles({ filter }) {
     if (filter.value === "geo") query = query.gte(filter.field, 6371 + 35786);
   }
 
-  const { data: tles, error } = await query;
+  if (page) {
+    const from = (page - 1) * PAGE_SISE;
+    const to = from + (PAGE_SISE - 1);
+    query = query.range(from, to);
+  }
 
-  if (!tles || tles.length === 0) await syncTles();
+  const { data: tles, error, count } = await query;
+  // if (!tles || count === 0) await syncTles();
 
   if (error) {
     console.log(error);
     throw new Error("Could Not Read TLEs Data");
   }
 
-  return tles;
+  return { tles, count };
 }
 
 export async function syncTles() {
@@ -44,15 +52,17 @@ export async function syncTles() {
     console.error(tleError);
     throw new Error("Could Not Read TLEs Data");
   }
+  console.log(tles);
+  const tlesMap = new Map(tles.map((t) => [t.norad_id, t]));
 
-  const tlesMap = new Map(tles.map((t) => [Number(t.norad_id), t]));
+  console.log(tlesMap);
 
   for (const sat of satellites) {
     const tle = tlesMap.get(sat.norad_id);
     console.log(tle);
     const shouldUpdate = !tle;
 
-    if (shouldUpdate) {
+    if (shouldUpdate || satellites.length !== tles.length) {
       const computed = computeTleParams(sat);
 
       const { error } = await supabase.from("tles").upsert({

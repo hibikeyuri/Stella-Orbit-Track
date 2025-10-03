@@ -12,14 +12,19 @@ export function useTles() {
       ? null
       : { field: "semi_major_axis", value: filterValue };
 
+  const page =
+    !searchParams.get("page") || isNaN(Number(searchParams.get("page")))
+      ? 1
+      : Number(searchParams.get("page"));
+
   const {
-    data: tles,
+    data: { tles, count } = {},
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["tles", filter],
-    queryFn: () => getTles({ filter }),
+    queryKey: ["tles", filter, page],
+    queryFn: () => getTles({ filter, page }),
   });
 
-  return { isLoading, error, tles };
+  return { isLoading, error, tles, count };
 }

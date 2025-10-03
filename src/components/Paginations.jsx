@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router";
 import { usePagination } from "@/hooks/usePagination";
 import { cn } from "@/lib/utils";
 import { Button } from "@/ui/button";
+import { PAGE_SISE, paginationItemsToDisplay } from "@/utils/constants";
 
 function PaginationButton({ children, active, disabled, ...props }) {
   return (
@@ -22,9 +23,6 @@ function PaginationButton({ children, active, disabled, ...props }) {
     </Button>
   );
 }
-
-const PAGE_SISE = 10;
-const paginationItemsToDisplay = 5;
 
 export default function Paginations({ count }) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -115,3 +113,30 @@ export default function Paginations({ count }) {
     </div>
   );
 }
+
+
+// {/* 右邊每頁筆數 */}
+//       <div className="bg-grey-0 flex w-[340px] flex-1 justify-end rounded-sm shadow-sm">
+//         <Select defaultValue="10" aria-label="Results per page">
+//           <SelectTrigger
+//             id="results-per-page"
+//             className="rounded-sm px-2 py-[1.7rem] text-[1.2rem] font-medium whitespace-nowrap"
+//           >
+//             <SelectValue placeholder="Select number of results" />
+//           </SelectTrigger>
+//           <SelectContent>
+//             <SelectItem value="10" className="px-4 py-2 text-[1.2rem]">
+//               10 / page
+//             </SelectItem>
+//             <SelectItem value="20" className="px-4 py-2 text-[1.2rem]">
+//               20 / page
+//             </SelectItem>
+//             <SelectItem value="50" className="px-4 py-2 text-[1.2rem]">
+//               50 / page
+//             </SelectItem>
+//             <SelectItem value="100" className="px-4 py-2 text-[1.2rem]">
+//               100 / page
+//             </SelectItem>
+//           </SelectContent>
+//         </Select>
+//       </div>
