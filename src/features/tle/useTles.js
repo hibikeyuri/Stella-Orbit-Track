@@ -6,6 +6,7 @@ import { getTles } from "@/services/apiTles";
 export function useTles() {
   const {
     filter,
+    sortBy,
     page,
     pageSize,
     pageSizeOptions: returnedOptions,
@@ -28,8 +29,8 @@ export function useTles() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["tles", filter, page, pageSize],
-    queryFn: () => getTles({ filter, page, pageSize }),
+    queryKey: ["tles", filter, sortBy, page, pageSize],
+    queryFn: () => getTles({ filter, sortBy, page, pageSize }),
     keepPreviousData: true,
   });
 

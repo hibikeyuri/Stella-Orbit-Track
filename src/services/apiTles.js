@@ -16,7 +16,7 @@ function applyFilter(query, filter) {
   return query;
 }
 
-export async function getTles({ filter, page = 1, pageSize = 10 }) {
+export async function getTles({ filter, sortBy, page = 1, pageSize = 10 }) {
   const validPageSize = Number(pageSize) > 0 ? Number(pageSize) : 10;
 
   let countQuery = supabase
@@ -58,8 +58,12 @@ export async function getTles({ filter, page = 1, pageSize = 10 }) {
   const to = from + (validPageSize - 1);
   query = query.range(from, to);
 
+  if (sortBy)
+    query = query.order(sortBy.field, {
+      ascending: sortBy.direction === "asc",
+    });
+
   const { data: tles, error } = await query;
-  // if (!tles || count === 0) await syncTles();
 
   if (error) {
     console.log(error);
