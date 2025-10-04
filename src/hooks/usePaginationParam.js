@@ -19,12 +19,17 @@ export function usePaginationParams(
   );
   const defaultPageSize = validOptions[0];
 
-  // parse URL parameters
+  // parse URL parameters: filter
   const filterValue = searchParams.get("semi_major_axis");
   const filter =
     !filterValue || filterValue === "all"
       ? null
       : { field: "semi_major_axis", value: filterValue };
+
+  // parse URL parameters: sortBy
+  const sortByRaw = searchParams.get("sortBy");
+  const [field, direction] = sortByRaw?.split("-") ?? [];
+  const sortBy = sortByRaw ? { field, direction } : null;
 
   const pageSize = Number(searchParams.get("pagesize")) || defaultPageSize;
   const validPageSize = validOptions.includes(pageSize)
@@ -105,6 +110,7 @@ export function usePaginationParams(
 
   return {
     filter,
+    sortBy,
     page,
     pageSize: validPageSize,
     pageSizeOptions: validOptions,
