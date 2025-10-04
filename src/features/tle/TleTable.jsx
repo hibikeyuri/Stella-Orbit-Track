@@ -14,7 +14,20 @@ import { Button } from "@/ui/button";
 //   "grid grid-cols-[1fr_0.8fr_1fr_0.8fr_1.2fr_2.2fr_2.2fr_0.8fr_0.8fr] min-w-[1400px] px-4 py-2";
 
 function TleTable() {
-  const { tles, isLoading, count} = useTles();
+
+//     return {
+//     isLoading,
+//     error,
+//     tles: data,
+//     count,
+//     currentPage,
+//     pageSize: returnedPageSize || pageSize,
+//     totalPages,
+//     pageSizeOptions: returnedOptions,
+//     apiTotalPages: totalPages,
+//   };
+// }
+  const { tles, isLoading, count, currentPage, totalPages, pageSize} = useTles();
 
   if (isLoading) return <Spinner />;
   // console.log(satellites);
@@ -45,7 +58,7 @@ function TleTable() {
       />
 
       <Table.Footer>
-        <Paginations count={count} />
+        <Paginations count={count} currentPage={currentPage} pageSize={pageSize} totalPages={totalPages}/>
       </Table.Footer>
     </Table>
   );
