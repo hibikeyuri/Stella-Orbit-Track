@@ -3,11 +3,7 @@ import supabase from "./supabase";
 import { computeTleParams } from "@/utils/algo-satellites";
 import { PAGE_SISE } from "@/utils/constants";
 
-export async function getTles({ filter, page }) {
-  let query = supabase
-    .from("tles")
-    .select("*, satellites(line1, line2)", { count: "exact" });
-
+function applyFilter(query, filter) {
   if (filter !== null) {
     if (filter.value === "leo") query = query.lt(filter.field, 6371 + 2000);
     if (filter.value === "meo")
@@ -17,13 +13,52 @@ export async function getTles({ filter, page }) {
     if (filter.value === "geo") query = query.gte(filter.field, 6371 + 35786);
   }
 
-  if (page) {
-    const from = (page - 1) * PAGE_SISE;
-    const to = from + (PAGE_SISE - 1);
-    query = query.range(from, to);
+  return query;
+}
+
+export async function getTles({ filter, page = 1, pageSize = 10 }) {
+  const validPageSize = Number(pageSize) > 0 ? Number(pageSize) : 10;
+
+  let countQuery = supabase
+    .from("tles")
+    .select("*", { count: "exact", head: "true" });
+
+  countQuery = applyFilter(countQuery, filter);
+
+  const { count: totalCount, error: countError } = await countQuery;
+
+  if (countError) {
+    console.error("Error fetching TLE count:", countError);
+    throw new Error("Could not fetch TLE count");
   }
 
-  const { data: tles, error, count } = await query;
+  const totalPages = Math.ceil(totalCount / validPageSize);
+  const suggestedPage = page > 0 && page <= totalPages ? page : totalPages;
+
+  if (page !== suggestedPage) {
+    console.log(
+      `Invalid page ${page} (valid range: 1-${totalPages}), setting to page ${suggestedPage}`,
+    );
+    return {
+      data: [],
+      count: totalCount,
+      page: suggestedPage,
+      pageSize: validPageSize,
+      totalPages,
+    };
+  }
+
+  let query = supabase
+    .from("tles")
+    .select("*, satellites(line1, line2)", { count: "exact" });
+
+  query = applyFilter(query, filter);
+
+  const from = (suggestedPage - 1) * validPageSize;
+  const to = from + (validPageSize - 1);
+  query = query.range(from, to);
+
+  const { data: tles, error } = await query;
   // if (!tles || count === 0) await syncTles();
 
   if (error) {
@@ -31,7 +66,13 @@ export async function getTles({ filter, page }) {
     throw new Error("Could Not Read TLEs Data");
   }
 
-  return { tles, count };
+  return {
+    tles,
+    count: totalCount,
+    page: suggestedPage,
+    pageSize: validPageSize,
+    totalPages,
+  };
 }
 
 export async function syncTles() {

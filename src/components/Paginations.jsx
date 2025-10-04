@@ -1,9 +1,17 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect } from "react";
 import { useSearchParams } from "react-router";
 
 import { usePagination } from "@/hooks/usePagination";
 import { cn } from "@/lib/utils";
 import { Button } from "@/ui/button";
+import {
+  Select,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+} from "@/ui/select";
 import { PAGE_SISE, paginationItemsToDisplay } from "@/utils/constants";
 
 function PaginationButton({ children, active, disabled, ...props }) {
@@ -24,19 +32,18 @@ function PaginationButton({ children, active, disabled, ...props }) {
   );
 }
 
-export default function Paginations({ count }) {
+export default function Paginations({
+  count,
+  currentPage,
+  pageSize,
+  totalPages,
+  pageSizeOptions = [10, 20, 50, 100],
+}) {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const currentPage =
-    !searchParams.get("page") || isNaN(Number(searchParams.get("page")))
-      ? 1
-      : Number(searchParams.get("page"));
+  const start = (currentPage - 1) * pageSize + 1;
 
-  const totalPages = Math.ceil(count / PAGE_SISE);
-
-  const start = (currentPage - 1) * PAGE_SISE + 1;
-
-  const end = currentPage === totalPages ? count : currentPage * PAGE_SISE;
+  const end = Math.min(currentPage * pageSize, count);
 
   const { pages, showLeftEllipsis, showRightEllipsis } = usePagination({
     currentPage,
@@ -44,7 +51,30 @@ export default function Paginations({ count }) {
     paginationItemsToDisplay,
   });
 
-  console.log({ currentPage, totalPages, paginationItemsToDisplay, pages });
+  // console.log({ count, currentPage, pageSize, totalPages, paginationItemsToDisplay, pages });
+
+  const urlPageSzie = Number(searchParams.get("pagesize"));
+  const urlCurrentPage = Number(searchParams.get("page"));
+
+  useEffect(() => {
+    if (
+      urlPageSzie !== pageSize ||
+      urlCurrentPage !== currentPage ||
+      !pageSizeOptions.includes(urlPageSzie)
+    ) {
+      searchParams.set("page", String(currentPage));
+      searchParams.set("pagesize", String(pageSize));
+      setSearchParams(searchParams);
+    }
+  }, [
+    urlPageSzie,
+    urlCurrentPage,
+    searchParams,
+    setSearchParams,
+    currentPage,
+    pageSize,
+    pageSizeOptions,
+  ]);
 
   function goToPage(page) {
     searchParams.set("page", String(page));
@@ -64,6 +94,11 @@ export default function Paginations({ count }) {
     setSearchParams(searchParams);
   }
 
+  function handlePageSize(value) {
+    searchParams.set("pagesize", value);
+    setSearchParams(searchParams);
+  }
+
   return (
     <div className="flex w-full items-center justify-between">
       {/* 左邊文字 */}
@@ -79,13 +114,11 @@ export default function Paginations({ count }) {
           <ChevronLeft className="h-[1.8rem] w-[1.8rem]" />
           <span>Prev</span>
         </PaginationButton>
-
         {/* 中間按鈕 */}
         {/* 左省略號 */}
         {showLeftEllipsis && (
           <span className="px-2 text-[1.4rem] font-medium">…</span>
         )}
-
         {/* 頁碼 */}
         {pages.map((page) => (
           <PaginationButton
@@ -96,12 +129,10 @@ export default function Paginations({ count }) {
             {page}
           </PaginationButton>
         ))}
-
         {/* 右省略號 */}
         {showRightEllipsis && (
           <span className="px-2 text-[1.4rem] font-medium">…</span>
         )}
-
         <PaginationButton
           disabled={currentPage === totalPages}
           onClick={nextPage}
@@ -109,34 +140,31 @@ export default function Paginations({ count }) {
           <span>Next</span>
           <ChevronRight className="h-[1.8rem] w-[1.8rem]" />
         </PaginationButton>
+
+        {/* 右邊每頁筆數 */}
+        <div className="bg-grey-0 flex w-[140px] flex-1 justify-end rounded-sm shadow-sm">
+          <Select value={String(pageSize)} onValueChange={handlePageSize}>
+            <SelectTrigger
+              id="results-per-page"
+              className="rounded-sm px-2 py-[1rem] text-[1.2rem] font-medium whitespace-nowrap"
+            >
+              <SelectValue placeholder="Select number of results" />
+            </SelectTrigger>
+
+            <SelectContent>
+              {pageSizeOptions.map((option) => (
+                <SelectItem
+                  key={option}
+                  value={String(option)}
+                  className="px-4 py-2 text-[1.2rem]"
+                >
+                  {option} / page
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     </div>
   );
 }
-
-
-// {/* 右邊每頁筆數 */}
-//       <div className="bg-grey-0 flex w-[340px] flex-1 justify-end rounded-sm shadow-sm">
-//         <Select defaultValue="10" aria-label="Results per page">
-//           <SelectTrigger
-//             id="results-per-page"
-//             className="rounded-sm px-2 py-[1.7rem] text-[1.2rem] font-medium whitespace-nowrap"
-//           >
-//             <SelectValue placeholder="Select number of results" />
-//           </SelectTrigger>
-//           <SelectContent>
-//             <SelectItem value="10" className="px-4 py-2 text-[1.2rem]">
-//               10 / page
-//             </SelectItem>
-//             <SelectItem value="20" className="px-4 py-2 text-[1.2rem]">
-//               20 / page
-//             </SelectItem>
-//             <SelectItem value="50" className="px-4 py-2 text-[1.2rem]">
-//               50 / page
-//             </SelectItem>
-//             <SelectItem value="100" className="px-4 py-2 text-[1.2rem]">
-//               100 / page
-//             </SelectItem>
-//           </SelectContent>
-//         </Select>
-//       </div>
