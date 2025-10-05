@@ -10,6 +10,7 @@ import CreateSatelliteForm from "./CreateSatelliteForm";
 import { SatelliteRow } from "./SatelliteRow";
 import { useSatellites } from "./useSatellites";
 
+import Menusv1 from "@/components/Menusv1";
 import ToastModal from "@/components/ToastModal";
 import { Button } from "@/ui/button";
 
@@ -101,18 +102,20 @@ function SatelliteTable() {
         <div>operation</div>
       </Table.Header>
 
-      <Table.Body
-        data={sortedSatellites}
-        render={(satellite) => (
-          <div key={satellite.id}>
-            <SatelliteRow
-              satellite={satellite}
-              editingId={editingId}
-              setEditingId={setEditingId}
-            />
-          </div>
-        )}
-      />
+      <Menusv1>
+        <Table.Body
+          data={sortedSatellites}
+          render={(satellite) => (
+            <div key={satellite.id}>
+              <SatelliteRow
+                satellite={satellite}
+                editingId={editingId}
+                setEditingId={setEditingId}
+              />
+            </div>
+          )}
+        />
+      </Menusv1>
     </Table>
   );
 }

@@ -114,57 +114,57 @@ export function SatelliteRow({ satellite, editingId, setEditingId }) {
         </Modal>
 
         <Modal>
-          <Menusv1>
-            {/* Dropdown Toggle */}
-            <Menusv1.Toggle id={id} />
+          {/* <Menusv1> */}
+          {/* Dropdown Toggle */}
+          <Menusv1.Toggle id={id} />
 
-            {/* Dropdown List */}
-            <Menusv1.List id={id}>
-              {/* Duplicate */}
+          {/* Dropdown List */}
+          <Menusv1.List id={id}>
+            {/* Duplicate */}
+            <Menusv1.Button
+              size="sm"
+              variant="secondary"
+              onClick={handleDuplicate}
+              className="w-16"
+            >
+              Duplicate
+            </Menusv1.Button>
+
+            {/* Edit -> Modal */}
+            <Modal.Open opens={"edit"}>
               <Menusv1.Button
                 size="sm"
                 variant="secondary"
-                onClick={handleDuplicate}
+                onClick={() => setEditingId(isEditing ? null : id)}
                 className="w-16"
               >
-                Duplicate
+                {isEditing ? "Close" : "Edit"}
               </Menusv1.Button>
+            </Modal.Open>
+            <Modal.Window name={"edit"}>
+              <CreateSatelliteForm satelliteToEdit={satellite} />
+            </Modal.Window>
 
-              {/* Edit -> Modal */}
-              <Modal.Open opens={"edit"}>
-                <Menusv1.Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => setEditingId(isEditing ? null : id)}
-                  className="w-16"
-                >
-                  {isEditing ? "Close" : "Edit"}
-                </Menusv1.Button>
-              </Modal.Open>
-              <Modal.Window name={"edit"}>
-                <CreateSatelliteForm satelliteToEdit={satellite} />
-              </Modal.Window>
-
-              {/* Delete -> Modal */}
-              <Modal.Open opens={"delete"}>
-                <Menusv1.Button
-                  size="sm"
-                  variant="destructive"
-                  disabled={isDeleting}
-                  className="w-16"
-                >
-                  Delete
-                </Menusv1.Button>
-              </Modal.Open>
-              <Modal.Window name={"delete"}>
-                <ConfirmDelete
-                  resource="satellites"
-                  disabled={isDeleting || isCreating}
-                  onConfirm={() => deleteSatellite(id)}
-                />
-              </Modal.Window>
-            </Menusv1.List>
-          </Menusv1>
+            {/* Delete -> Modal */}
+            <Modal.Open opens={"delete"}>
+              <Menusv1.Button
+                size="sm"
+                variant="destructive"
+                disabled={isDeleting}
+                className="w-16"
+              >
+                Delete
+              </Menusv1.Button>
+            </Modal.Open>
+            <Modal.Window name={"delete"}>
+              <ConfirmDelete
+                resource="satellites"
+                disabled={isDeleting || isCreating}
+                onConfirm={() => deleteSatellite(id)}
+              />
+            </Modal.Window>
+          </Menusv1.List>
+          {/* </Menusv1> */}
         </Modal>
       </div>
     </Table.Row>
