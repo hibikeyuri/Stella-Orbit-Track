@@ -52,7 +52,7 @@ function Window({ children, name }) {
   if (name !== openName) return;
 
   return createPortal(
-    <div>
+    <div className="modal-content">
       <Overlay>
         {/* Modal */}
         {/* <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[var(--border-radius-lg)] bg-[var(--color-grey-0)] px-16 py-12 shadow-[var(--shadow-lg)] transition-all duration-500"> */}
