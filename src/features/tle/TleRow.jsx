@@ -1,3 +1,7 @@
+import { Eye } from "lucide-react";
+import { useNavigate } from "react-router";
+
+import Menusv1 from "@/components/Menusv1";
 import { Table } from "@/components/Table";
 import Tag from "@/components/Tag";
 
@@ -41,6 +45,8 @@ function TleRow({ tle }) {
     Other: "gray",
   };
 
+  const navigate = useNavigate();
+
   return (
     <Table.Row>
       <div>{satellite_id}</div>
@@ -54,6 +60,19 @@ function TleRow({ tle }) {
       <div>{mean_anomaly}</div>
       <div>{mean_motion.toFixed(8)}</div>
       <div>{age_days}</div>
+
+      <Menusv1.Toggle id={satellite_id} />
+
+      <Menusv1.List id={satellite_id}>
+        <Menusv1.Button
+          size="sm"
+          variant="secondary"
+          onClick={() => navigate(`/tles/${satellite_id}`)}
+          className="w-16"
+        >
+          See Detail
+        </Menusv1.Button>
+      </Menusv1.List>
     </Table.Row>
   );
 }

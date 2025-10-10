@@ -4,6 +4,9 @@ import {
   gstime,
   eciToEcf,
   ecfToLookAngles,
+  eciToGeodetic,
+  degreesLat,
+  degreesLong,
 } from "satellite.js";
 
 /**
@@ -249,5 +252,21 @@ export function computeTleParams(sat) {
     semi_major_axis: semiMajorAxis,
     period,
     age_days: ageDays,
+  };
+}
+
+export function getCurrentPosition(line1, line2, date = new Date()) {
+  const satrec = twoline2satrec(line1, line2);
+  const gmst = gstime(date);
+  const positionAndVelocity = propagate(satrec, date);
+  if (!positionAndVelocity.position) return null;
+
+  const positionGd = eciToGeodetic(positionAndVelocity.position, gmst);
+
+  return {
+    lat: degreesLat(positionGd.latitude),
+    lon: degreesLong(positionGd.longitude),
+    alt: positionGd.height * 1000, // km → meters
+    timestamp: date,
   };
 }
