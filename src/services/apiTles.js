@@ -79,6 +79,21 @@ export async function getTles({ filter, sortBy, page = 1, pageSize = 10 }) {
   };
 }
 
+export async function getTle(id) {
+  const { data, error } = await supabase
+    .from("tles")
+    .select("*, satellites(line1, line2)")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    console.log(error);
+    throw new Error("Tle Data Not Found");
+  }
+
+  return data;
+}
+
 export async function syncTles() {
   const { data: satellites, error: satError } = await supabase
     .from("satellites")
