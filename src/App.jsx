@@ -4,6 +4,8 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import AppLayout from "./components/AppLayout.jsx";
 import Heading from "./components/Heading.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import LoginForm from "./features/authentication/LoginForm.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Satellites from "./pages/Satellites.jsx";
 import Settings from "./pages/Settings.jsx";
@@ -28,7 +30,13 @@ function App() {
       <Toaster>
         <BrowserRouter>
           <Routes>
-            <Route element={<AppLayout></AppLayout>}>
+            <Route
+              element={
+                <ProtectedRoute>
+                  <AppLayout></AppLayout>
+                </ProtectedRoute>
+              }
+            >
               <Route
                 index
                 element={<Navigate replace to="dashboard"></Navigate>}
@@ -41,7 +49,7 @@ function App() {
               <Route path="Settings" element={<Settings></Settings>} />
             </Route>
 
-            <Route path="login" element={<Heading>Login</Heading>} />
+            <Route path="login" element={<LoginForm></LoginForm>} />
             <Route path="*" element={<Heading>You Go to Wrong Path</Heading>} />
           </Routes>
         </BrowserRouter>
