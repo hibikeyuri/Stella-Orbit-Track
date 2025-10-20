@@ -6,7 +6,9 @@ import AppLayout from "./components/AppLayout.jsx";
 import Heading from "./components/Heading.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import LoginForm from "./features/authentication/LoginForm.jsx";
+import Account from "./pages/Account.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import Login from "./pages/Login.jsx";
 import Satellites from "./pages/Satellites.jsx";
 import Settings from "./pages/Settings.jsx";
 import Tle from "./pages/Tle.jsx";
@@ -47,9 +49,10 @@ function App() {
               <Route path="TLEs/:satellite_id" element={<Tle></Tle>} />
               <Route path="Users" element={<Users></Users>} />
               <Route path="Settings" element={<Settings></Settings>} />
+              <Route path="account" element={<Account></Account>}></Route>
             </Route>
 
-            <Route path="login" element={<LoginForm></LoginForm>} />
+            <Route path="login" element={<Login></Login>} />
             <Route path="*" element={<Heading>You Go to Wrong Path</Heading>} />
           </Routes>
         </BrowserRouter>
