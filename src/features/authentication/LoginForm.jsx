@@ -53,7 +53,6 @@ function LoginForm() {
 
       <FormRow orientation="vertical">
         <Button disabled={isLoading}>
-          {console.log(isLoading)}
           {!isLoading ? "Login" : <SpinnerMini />}
         </Button>
       </FormRow>

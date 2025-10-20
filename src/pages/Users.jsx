@@ -1,14 +1,14 @@
 import Heading from "../components/Heading";
-import Row from "../components/Row";
 
-function Users() {
+import SignupForm from "@/features/authentication/SignupForm";
+
+function NewUsers() {
   return (
     <>
-      <Row>
-        <Heading as="h1">Users</Heading>
-      </Row>
+      <Heading as="h1">Create a new User</Heading>
+      <SignupForm></SignupForm>
     </>
   );
 }
 
-export default Users;
+export default NewUsers;
