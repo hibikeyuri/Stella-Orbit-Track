@@ -32,5 +32,7 @@ final-*/**
 venv/
 venv/*
 **/__pycache__/
-backend/
-backend/*
+backend/.vscode
+backend/.mypy_cache
+backend/.env
+backend/*.db
