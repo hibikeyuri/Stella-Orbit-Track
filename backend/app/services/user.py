@@ -132,7 +132,7 @@ class UserService(BaseService):
             subject="Stella Orbital Track Account Password Reset",
             context={
                 "username": user.fullName,
-                "reset_url": f"http://{app_settings.APP_DOMAIN}/{router_prefix}/verify?token={token}",
+                "reset_url": f"http://{app_settings.APP_DOMAIN}/{router_prefix}/reset_password_form?token={token}",
             },
             template_name="mail_password_reset.html",
         )
