@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MFA Verification - Stella Orbital Track</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap");
+      body {
+        font-family: "Manrope";
+        background-color: #f2f2f2;
+      }
+      .container {
+        width: 90vw;
+        max-width: 560px;
+        margin: 50px auto;
+        padding: 30px;
+        border-radius: 20px;
+        border: 1px solid #ccc;
+        background-color: white;
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-top: 20px;
+      }
+      input {
+        padding: 0.5em 0.75em;
+        font-size: 18px;
+        border-radius: 0.45em;
+        border: 1px solid #ccc;
+      }
+      input[type="submit"] {
+        color: white;
+        background-color: black;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>MFA Verification</h1>
+      <p>Enter the 6-digit code from your authenticator app.</p>
+
+      <form action="{{ verify_url }}" method="post">
+        <input type="hidden" name="temp_token" value="{{ temp_token }}" />
+        <input
+          type="text"
+          name="code"
+          placeholder="Enter 6-digit code"
+          maxlength="6"
+          required
+        />
+        <input type="submit" value="Verify & Login" />
+      </form>
+    </div>
+  </body>
+</html>
