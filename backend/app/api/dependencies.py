@@ -8,6 +8,7 @@ from app.core.security import oauth2_scheme
 from app.database.models import User
 from app.database.redis import is_jti_blacklisted
 from app.database.session import get_session
+from app.services.mfa import MFAService
 from app.services.satellite import SatelliteService
 from app.services.user import UserService
 from app.utils import decode_access_token
@@ -67,8 +68,13 @@ def get_user_service(session: SessionDep, tasks: BackgroundTasks):
     return UserService(session, tasks)
 
 
+def get_mfa_service(session: SessionDep):
+    return MFAService(session)
+
+
 # Dependency Chain:
 # get_access_token -> get_current_user -> UserDep
 UserDep = Annotated[User, Depends(get_current_user)]
 
 UserServiceDep = Annotated[UserService, Depends(get_user_service)]
+MFAServiceDep = Annotated[MFAService, Depends(get_mfa_service)]

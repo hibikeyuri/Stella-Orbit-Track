@@ -1,11 +1,18 @@
+import io
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form, Request
+import qrcode
+from fastapi import APIRouter, Depends, Form, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.templating import Jinja2Templates
 from pydantic import EmailStr
 
-from app.api.dependencies import UserDep, UserServiceDep, get_access_token
+from app.api.dependencies import (
+    MFAServiceDep,
+    UserDep,
+    UserServiceDep,
+    get_access_token,
+)
 from app.core.security import oauth2_scheme
 from app.database.redis import add_jti_to_blacklist
 from app.utils import TEMPLATE_DIR
@@ -26,12 +33,112 @@ async def register_user(user: UserCreate, service: UserServiceDep):
 async def login_user(
     request_form: Annotated[OAuth2PasswordRequestForm, Depends()],
     service: UserServiceDep,
+    mfa_service: MFAServiceDep,
 ):
+    user = await service.authenticate_user(request_form.username, request_form.password)
+
+    if not user:
+        return {"error": "username or password is wrong!"}
+
+    if await mfa_service.check_mfa(request_form.username):
+        temp_token = await mfa_service._generate_mfa_token(request_form.username)
+        return {
+            "mfa_required": True,
+            "temp_token": temp_token,
+        }
     token = await service._generate_token(request_form.username, request_form.password)
     return {
         "access_token": token,
         "type": "jwt",
     }
+
+
+### Login the User by MFA
+@router.post("/token/mfa")
+async def login_mfa(
+    temp_token: str,
+    code: Annotated[str, Form()],
+    service: UserServiceDep,
+    mfa_service: MFAServiceDep,
+):
+    valid = await mfa_service.verify_code(temp_token, code)
+    if not valid:
+        return {"detail": "Invalid MFA code"}, 401
+
+    access_token = await service._generate_token_mfa(temp_token)
+    return {
+        "access_token": access_token,
+        "type": "jwt",
+    }
+
+
+### Input MFA
+@router.get("/mfa_verify_page")
+async def mfa_verify_page(request: Request, temp_token: str):
+    templates = Jinja2Templates(TEMPLATE_DIR)
+    return templates.TemplateResponse(
+        "mfa/mfa_verify.html",
+        {
+            "request": request,
+            "temp_token": temp_token,
+            "verify_url": f"http://localhost:8000/user/token/mfa?temp_token={temp_token}",
+        },
+    )
+
+
+### Enable MFA
+@router.post("/enable_mfa_page")
+async def get_enable_mfa_page(
+    request: Request,
+    user: UserDep,
+    service: MFAServiceDep,
+):
+    if not user.email:
+        return {"error": "No User"}
+
+    temp_token = await service._generate_mfa_token(user.email)
+
+    if not temp_token:
+        return {"error": "no temp_token"}
+
+    mfa_data = await service._enable_mfa(temp_token)
+    templates = Jinja2Templates(TEMPLATE_DIR)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="mfa/mfa_setup.html",
+        context={
+            "request": request,
+            "otpauth_uri": str(mfa_data["otpauth_uri"]),
+            "verify_url": f"http://localhost:8000/user/enable_mfa_verify?temp_token={temp_token}",
+        },
+    )
+
+
+### Generate QR code
+@router.get("/mfa/qrcode")
+async def generate_mfa_qrcode(uri: str):
+    img = qrcode.make(uri)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    return Response(content=buf.getvalue(), media_type="image/png")
+
+
+### Verify MFA settings
+@router.post("/enable_mfa_verify")
+async def verify_mfa_code(
+    temp_token: str,
+    code: Annotated[str, Form()],
+    mfa_service: MFAServiceDep,
+):
+    print(code)
+    valid = await mfa_service.verify_code(temp_token, code)
+
+    if not valid:
+        return {"detail": "Invalid code"}, 400
+
+    return {"detail": "MFA enabled successfully"}
 
 
 ### Get user profile
@@ -44,6 +151,12 @@ async def get_user_profile(user: UserDep):
 @router.post("/test")
 async def get_test(token: Annotated[str, Depends(oauth2_scheme)]):
     return await get_access_token(token)
+
+
+### Enable MFA
+@router.post("enable_mfa")
+async def enable_mfa(token: Annotated[str, Depends(oauth2_scheme)]):
+    pass
 
 
 ### Verify User Email
@@ -74,7 +187,7 @@ async def get_reset_password_form(request: Request, token: str):
     )
 
 
-### Reset Seller Password
+### Reset User Password
 @router.post("/reset_password")
 async def reset_password(
     request: Request,
@@ -98,6 +211,6 @@ async def reset_password(
 async def logout_user(
     token_data: Annotated[dict, Depends(get_access_token)],
 ):
-    print("我的資料 token_data:", token_data)
+    print("token_data:", token_data)
     await add_jti_to_blacklist(token_data["jti"])
     return {"detail": "Successfully logged out"}

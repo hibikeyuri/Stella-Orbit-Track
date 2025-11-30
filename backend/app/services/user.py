@@ -122,6 +122,43 @@ class UserService(BaseService):
         )
         return token
 
+    async def authenticate_user(self, email: str, password: str):
+        user = await self._get_by_email(email)
+
+        if not user:
+            return None
+
+        if not password_context.verify(password, user.password_hash):
+            return None
+
+        return user
+
+    async def _generate_token_mfa(self, temp_token: str) -> str:
+        temp_token_data = decode_url_safe_token(temp_token)
+
+        if not temp_token_data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="No token"
+            )
+
+        mfa_user = await self._get_by_email(temp_token_data["email"])
+
+        if not mfa_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            )
+
+        access_token = generate_access_token(
+            data={
+                "user": {
+                    "name": mfa_user.fullName,
+                    "id": str(mfa_user.id),
+                }
+            }
+        )
+
+        return access_token
+
     async def send_password_reset_link(self, email, router_prefix="user"):
         user = await self._get_by_email(email)
 

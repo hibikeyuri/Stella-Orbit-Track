@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Setup MFA - Stella Orbital Track</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Sedgwick+Ave+Display&display=swap");
+
+      * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: #f2f2f2;
+        font-family: "Manrope";
+      }
+
+      .container {
+        --padding: 20px;
+        width: 80vw;
+        max-width: 400px;
+        margin: 30px auto;
+        padding: var(--padding);
+        border-radius: 16px;
+        border: 1px solid #ccc;
+        background-color: white;
+      }
+
+      .qr-box {
+        margin: 15px auto;
+        width: 180px;
+        height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px dashed #aaa;
+        border-radius: 10px;
+        background-color: #fafafa;
+      }
+
+      .qr-box img {
+        max-width: 100%;
+        max-height: 100%;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 15px;
+      }
+
+      input {
+        padding: 0.4em 0.6em;
+        font-size: 16px;
+        border-radius: 0.45em;
+        background-color: #f2f2f2;
+        border: 1px solid #ccc;
+      }
+
+      input[type="submit"] {
+        color: white;
+        background-color: black;
+      }
+
+      .uri-box {
+        word-break: break-all;
+        background: #f8f8f8;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        font-size: 13px;
+        margin-top: 8px;
+      }
+
+      h1,
+      h2 {
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Enable Multi-Factor Authentication</h1>
+      <p>
+        Scan the QR code below using Google Authenticator, Authy, or any TOTP
+        app.
+      </p>
+      <div class="qr-box">
+        <img
+          src="http:localhost:8000/user/mfa/qrcode?uri={{ otpauth_uri }}"
+          alt="QR Code"
+        />
+      </div>
+      <h2>Manual Setup (Optional)</h2>
+      <p>
+        If you cannot scan the QR code, enter this URI in your authenticator
+        app:
+      </p>
+      <div class="uri-box">{{ otpauth_uri }}</div>
+      <form action="{{ verify_url }}" method="post">
+        <input
+          type="text"
+          name="code"
+          placeholder="Enter 6-digit code"
+          maxlength="6"
+          required
+        />
+        <input type="submit" value="Verify & Enable MFA" />
+      </form>
+    </div>
+  </body>
+</html>

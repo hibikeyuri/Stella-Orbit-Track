@@ -98,6 +98,8 @@ class UserBase(BaseModel):
     nationality: str | None = None
     countryFlag: str | None = None
 
+    mfa_enabled: bool | None = None
+
 
 class UserCreate(UserBase):
     password: str

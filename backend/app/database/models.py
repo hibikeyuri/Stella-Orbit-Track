@@ -86,10 +86,16 @@ class User(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc), description="build time"
     )
     fullName: str | None = Field(default=None, description="fullName")
+    
     email: EmailStr | None = Field(
         default=None, unique=True, index=True, description="email"
     )
     email_verified: bool = Field(default=False, description="email_verified")
+
+    totp_secret: str | None = Field(default=None, description="totp_secret")
+    mfa_enabled: bool = Field(default=False, description="enable_mfa")
+    mfa_enabled_at: datetime | None = Field(default=None)
+    
     nationalID: str | None = Field(default=None, unique=True, description="nationalID")
     nationality: str | None = Field(default=None, description="nationality")
     countryFlag: str | None = Field(default=None, description="countryFlag")
