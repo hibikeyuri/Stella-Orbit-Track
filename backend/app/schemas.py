@@ -100,6 +100,9 @@ class UserBase(BaseModel):
 
     mfa_enabled: bool | None = None
 
+    provider: str | None = None
+    provider_user_id: str | None = None
+
 
 class UserCreate(UserBase):
     password: str

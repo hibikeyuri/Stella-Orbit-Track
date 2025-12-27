@@ -1,12 +1,13 @@
 from fastapi import APIRouter
 
-from .routers import satellite, user
+from .routers import oauth, satellite, user
 
 # Single router to group all api routers
 master_router = APIRouter()
 
 master_router.include_router(satellite.router)
 master_router.include_router(user.router)
+master_router.include_router(oauth.router)
 
 
 # from typing import Sequence

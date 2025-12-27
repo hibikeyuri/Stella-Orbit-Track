@@ -42,6 +42,25 @@ class NotificationSettings(BaseSettings):
     model_config = _base_config
 
 
+class GithubSettings(BaseSettings):
+    GITHUB_CLIENT_ID: str
+    GITHUB_CLIENT_SECRET: str
+    GITHUB_AUTHORIZATION_URL: str
+
+    model_config = _base_config
+
+
+class GoogleSettings(BaseSettings):
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: str
+    GOOGLE_AUTHORIZATION_URL: str
+    GOOGLE_REDIRECT_URI: str
+
+    model_config = _base_config
+
+
 app_settings = AppSettings()
 security_settings = SecuritySettings()
 notification_settings = NotificationSettings()
+github_settings = GithubSettings()
+google_settings = GoogleSettings()

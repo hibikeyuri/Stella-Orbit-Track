@@ -92,6 +92,9 @@ class User(SQLModel, table=True):
     )
     email_verified: bool = Field(default=False, description="email_verified")
 
+    provider: str = Field(default=False, description="third-party provider")
+    provider_user_id: str =Field(default=False, description="provider id")
+
     totp_secret: str | None = Field(default=None, description="totp_secret")
     mfa_enabled: bool = Field(default=False, description="enable_mfa")
     mfa_enabled_at: datetime | None = Field(default=None)
