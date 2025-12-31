@@ -12,6 +12,9 @@ class BaseService:
     async def _get(self, id: UUID):
         return await self.session.get(self.model, id)
 
+    async def _get_by_int(self, id: int):
+        return await self.session.get(self.model, id)
+
     async def _add(self, entity):
         self.session.add(entity)
         await self.session.commit()
@@ -30,4 +33,13 @@ class BaseService:
             stmt = stmt.where(getattr(self.model, attr) == value)
         result = await self.session.execute(stmt)
 
+        return result.scalars().all()
+
+    async def _list2(self, **filters):
+        stmt = select(self.model)
+
+        for attr, value in filters.items():
+            stmt = stmt.where(getattr(self.model, attr) == value)
+
+        result = await self.session.execute(stmt)
         return result.scalars().all()
