@@ -10,7 +10,9 @@ from app.database.redis import is_jti_blacklisted
 from app.database.session import get_session
 from app.services.mfa import MFAService
 from app.services.oauth.oauth import OauthService
+from app.services.propagatecache import PropagationService
 from app.services.satellite import SatelliteService
+from app.services.tle import TLEService
 from app.services.user import UserService
 from app.utils import decode_access_token
 
@@ -27,22 +29,12 @@ SatelliteServiceDep = Annotated[
 ]
 
 
-# def get_tle_service(session: SessionDep):
-#     return TLEService(session)
-
-# TLEServiceDep = Annotated[
-#     TLEService,
-#     Depends(get_tle_service),
-# ]
+def get_tle_service(session: SessionDep):
+    return TLEService(session)
 
 
-# def get_propagate_cache_service(session: SessionDep):
-#     return PropagateCacheService(session)
-
-# PropagateCacheServiceDep = Annotated[
-#     PropagateCacheService,
-#     Depends(get_propagate_cache_service),
-# ]
+def get_propagation_service(session: SessionDep):
+    return PropagationService(session)
 
 
 # Access token data dep
@@ -84,3 +76,5 @@ UserDep = Annotated[User, Depends(get_current_user)]
 UserServiceDep = Annotated[UserService, Depends(get_user_service)]
 MFAServiceDep = Annotated[MFAService, Depends(get_mfa_service)]
 OauthServiceDep = Annotated[OauthService, Depends(get_oauth_service)]
+TLEServiceDep = Annotated[TLEService, Depends(get_tle_service)]
+PropagationServiceDep = Annotated[PropagationService,Depends(get_propagation_service),]
