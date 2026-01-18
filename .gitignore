@@ -36,3 +36,6 @@ backend/.vscode
 backend/.mypy_cache
 backend/.env
 backend/*.db
+
+# Environment Variables
+.env

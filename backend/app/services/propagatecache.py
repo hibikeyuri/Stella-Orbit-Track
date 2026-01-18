@@ -17,7 +17,7 @@ class PropagationService:
 
     async def _get_satrec(self, satellite_id: int) -> Satrec:
         satellite = await self.session.get(Satellite, satellite_id)
-        print("我到了_get_satrec", satellite.line1, satellite.line2)
+        # print("我到了_get_satrec", satellite.line1, satellite.line2)
         if not satellite:
             raise ValueError(f"Satellite {satellite_id} not found")
 
@@ -132,8 +132,10 @@ class PropagationService:
             )
 
             print(f"Time {t} Elevation {elevation:.2f}", flush=True)
-            print(f"t={t}, lat_sat={math.degrees(lat_sat):.2f}, lon_sat={math.degrees(lon_sat):.2f}, elevation={elevation:.2f}", flush=True)
-
+            print(
+                f"t={t}, lat_sat={math.degrees(lat_sat):.2f}, lon_sat={math.degrees(lon_sat):.2f}, elevation={elevation:.2f}",
+                flush=True,
+            )
 
             if elevation > 0 and rise is None:
                 rise = t
@@ -146,7 +148,6 @@ class PropagationService:
 
         if not rise:
             return None
-    
 
         return {
             "start": rise,

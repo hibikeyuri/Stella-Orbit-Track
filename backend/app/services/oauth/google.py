@@ -44,16 +44,3 @@ class GoogleOAuthProvider:
             "email": data["email"],
             "name": data.get("name", ""),
         }
-
-
-# {
-#   "web": {
-#     "client_id": "1002443518940-c9gv7ngn86a5nf19p73218jchrv0arl8.apps.googleusercontent.com",
-#     "project_id": "address-to-lang-long",
-#     "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-#     "token_uri": "https://oauth2.googleapis.com/token",
-#     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-#     "client_secret": "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",
-#     "redirect_uris": ["https://localhost:8000/oauth/google/callback"]
-#   }
-# }

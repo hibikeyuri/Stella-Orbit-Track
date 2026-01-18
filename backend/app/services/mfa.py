@@ -41,7 +41,6 @@ class MFAService(BaseService):
             )
 
         if user.mfa_enabled:
-            print("RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
             return True
         else:
             return False

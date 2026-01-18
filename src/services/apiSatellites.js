@@ -1,85 +1,65 @@
-import { data } from "react-router";
-
-import supabase, { supabaseUrl } from "./supabase";
+import { apiFetch } from "./http";
 
 export async function getSatellites() {
-  const { data: satellites, error } = await supabase
-    .from("satellites")
-    .select("*");
-
-  if (error) {
-    console.log(error);
+  try {
+    const satellites = await apiFetch("/satellites");
+    console.log(satellites);
+    return await apiFetch("/satellites");
+  } catch (err) {
+    console.error(err);
     throw new Error("Could Not Read Satellites Data");
   }
+}
 
-  return satellites;
+async function uploadImage(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/upload/image`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) throw new Error("Image upload failed");
+  return (await res.json()).url;
 }
 
 export async function createSatellites(satellite, id) {
-  const hasImagePath = satellite.img?.startsWith?.(supabaseUrl);
+  try {
+    let imagePath = satellite.img;
 
-  const imageName = `${Math.random()} - ${satellite.img.name}`.replaceAll(
-    "/",
-    "",
-  );
-  const imagePath = hasImagePath
-    ? satellite.img
-    : `${supabaseUrl}/storage/v1/object/public/satellite-images/${imageName}`;
-
-  // 前置查詢
-  let query = supabase.from("satellites");
-  console.log("from apiSatellites.js");
-  console.log(satellite);
-  console.log(hasImagePath);
-
-  // 新增
-  if (!id) {
-    if (hasImagePath) {
-      query = query.insert([{ ...satellite, img: imagePath }]);
-    } else {
-      query = query.insert([{ ...satellite, img: ""}]);
+    if (satellite.img instanceof File) {
+      imagePath = await uploadImage(satellite.img);
     }
+
+    const payload = { ...satellite, img: imagePath };
+
+    if (!id) {
+      // CREATE
+      return await apiFetch("/satellites/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    }
+
+    // UPDATE
+    return await apiFetch(`/satellites/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.error(err);
+    throw new Error("Satellite could not be created or updated");
   }
-
-  // 修改
-  if (id) {
-    console.log("OKOK");
-    query = query.update({ ...satellite, img: imagePath }).eq("id", id);
-  }
-
-  const { data: satellites, error } = await query.select();
-
-  if (error) {
-    console.error(error);
-    throw new Error("Satellite cound not be created");
-  }
-
-  if (hasImagePath) return data;
-
-  const { error: storageError } = await supabase.storage
-    .from("satellite-images")
-    .upload(imageName, satellite.img);
-
-  if (storageError) {
-    await supabase.from("satellites").delete().eq("id", satellite.id);
-    console.error(storageError);
-    throw new Error(
-      "Satellite Image cound not be uploaded and the satellite wa not created",
-    );
-  }
-  return satellites;
 }
 
 export async function deleteSatellites(id) {
-  const { data: satellites, error } = await supabase
-    .from("satellites")
-    .delete()
-    .eq("id", id);
-
-  if (error) {
-    console.error(error);
-    throw new Error("Satellite cound not be deleted");
+  try {
+    return await apiFetch(`/satellites/${id}`, {
+      method: "DELETE",
+    });
+  } catch (err) {
+    console.error(err);
+    throw new Error("Satellite could not be deleted");
   }
-
-  return satellites;
 }
