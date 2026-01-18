@@ -56,7 +56,7 @@ async def login_user(
 ### Login the User by MFA
 @router.post("/token/mfa")
 async def login_mfa(
-    temp_token: str,
+    temp_token: Annotated[str, Form()],
     code: Annotated[str, Form()],
     service: UserServiceDep,
     mfa_service: MFAServiceDep,
@@ -115,6 +115,26 @@ async def get_enable_mfa_page(
     )
 
 
+### Enable MFA
+@router.get("/enable_mfa")
+async def enable_mfa(user: UserDep, service: MFAServiceDep):
+    if not user.email:
+        return {"error": "No User"}
+
+    temp_token = await service._generate_mfa_token(user.email)
+
+    if not temp_token:
+        return {"error": "no temp_token"}
+
+    mfa_data = await service._enable_mfa(temp_token)
+
+    return {
+        "temp_token": temp_token,
+        "otpauth_uri": str(mfa_data["otpauth_uri"]),
+        "verify_url": f"/user/enable_mfa_verify?temp_token={temp_token}",
+    }
+
+
 ### Generate QR code
 @router.get("/mfa/qrcode")
 async def generate_mfa_qrcode(uri: str):
@@ -151,12 +171,6 @@ async def get_user_profile(user: UserDep):
 @router.post("/test")
 async def get_test(token: Annotated[str, Depends(oauth2_scheme)]):
     return await get_access_token(token)
-
-
-### Enable MFA
-@router.post("enable_mfa")
-async def enable_mfa(token: Annotated[str, Depends(oauth2_scheme)]):
-    pass
 
 
 ### Verify User Email

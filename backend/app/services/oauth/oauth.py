@@ -22,7 +22,7 @@ class OauthService(BaseService):
         )
 
         if oauth:
-            return await self.session.get(User, oauth.user_id)
+            return await self.session.get(User, oauth.id)
 
         # same email → link account
         user = await self.session.scalar(

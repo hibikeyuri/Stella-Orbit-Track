@@ -9,6 +9,7 @@ import LoginForm from "./features/authentication/LoginForm.jsx";
 import Account from "./pages/Account.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Login from "./pages/Login.jsx";
+import MFA from "./pages/mfa.jsx";
 import OAuthCallback from "./pages/OAuthCallback.jsx";
 import Satellites from "./pages/Satellites.jsx";
 import Settings from "./pages/Settings.jsx";
@@ -55,6 +56,7 @@ function App() {
 
             <Route path="login" element={<Login></Login>} />
             <Route path="/oauth/callback" element={<OAuthCallback />} />
+            <Route path="mfa" element={<MFA></MFA>}></Route>
             <Route path="*" element={<Heading>You Go to Wrong Path</Heading>} />
           </Routes>
         </BrowserRouter>

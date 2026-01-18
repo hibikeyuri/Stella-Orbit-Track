@@ -17,18 +17,18 @@ export function useLogin() {
 
   const { mutate: login, isLoading } = useMutation({
     mutationFn: ({ email, password }) => loginApi({ email, password }),
-    onSuccess: async () => {
+    onSuccess: async (data) => {
+      if (data.mfa_required) {
+        navigate(`/mfa?temp_token=${data.temp_token}`);
+        return;
+      }
+
+      localStorage.setItem("access_token", data.access_token);
       const user = await getCurrentUser();
-      console.log("使用者");
-      console.log(user);
       queryClient.setQueryData(["user"], user);
 
       toast.success(loginInfo.title, loginInfo.description);
       navigate("/dashboard", { replace: true });
-    },
-    onError: (err) => {
-      console.log("ERROR", err);
-      toast.error(err.message, "error");
     },
   });
 

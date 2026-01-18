@@ -102,3 +102,36 @@ export async function getOAuthLoginUrl(provider) {
 export function setAuthToken(token) {
   localStorage.setItem("access_token", token);
 }
+
+export async function verifyMfa({ tempToken, code }) {
+  const formData = new FormData();
+  formData.append("temp_token", tempToken);
+  formData.append("code", code);
+
+  const res = await fetch(
+    `${import.meta.env.VITE_API_BASE_URL}/user/token/mfa`,
+    {
+      method: "POST",
+      body: formData,
+    },
+  );
+
+  console.log(formData);
+  console.log(res);
+
+  if (!res.ok) throw new Error("MFA verification failed");
+  return await res.json();
+}
+
+export async function getEnableMfaPage() {
+  const token = localStorage.getItem("access_token");
+
+  const res = await fetch(
+    `${import.meta.env.VITE_API_BASE_URL}/user/enable_mfa`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
+  if (!res.ok) throw new Error("Failed to fetch MFA page");
+  return await res.json();
+}
