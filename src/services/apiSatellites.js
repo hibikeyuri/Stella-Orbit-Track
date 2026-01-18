@@ -31,7 +31,7 @@ export async function createSatellites(satellite, id) {
     if (satellite.img instanceof File) {
       imagePath = await uploadImage(satellite.img);
     }
-
+    imagePath  = ""
     const payload = { ...satellite, img: imagePath };
 
     if (!id) {

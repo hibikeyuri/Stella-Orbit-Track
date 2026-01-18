@@ -3,7 +3,7 @@ import { apiFetch } from "./http";
 export async function signup({ fullName, email, password }) {
   const data = await apiFetch("/user/signup", {
     method: "POST",
-    body: JSON.stringify({ fullName, email, password }),
+    body: JSON.stringify({ fullName, email, password, mfa_enabled: false }),
   });
 
   return data;
@@ -85,4 +85,20 @@ export async function updateCurrentUser({ fullName, password, avatar }) {
   }
 
   return updatedUser;
+}
+
+export async function getOAuthLoginUrl(provider) {
+  const data = await apiFetch(`/oauth/${provider}/login`);
+
+  console.log("OAuth login response:", data);
+
+  if (!data?.auth_url) {
+    throw new Error("No auth_url returned from server");
+  }
+
+  return data.auth_url;
+}
+
+export function setAuthToken(token) {
+  localStorage.setItem("access_token", token);
 }

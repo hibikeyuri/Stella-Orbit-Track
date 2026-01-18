@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 
 import { useLogin } from "./useLogin";
 
@@ -8,19 +9,28 @@ import SpinnerMini from "@/components/SpinnerMini";
 import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 function LoginForm() {
-  const [email, setEmail] = useState("timse211@gmail.com");
-  const [password, setPassword] = useState("1234");
+  const navigate = useNavigate();
   const { login, isLoading } = useLogin();
 
-  function handleSubmit(event) {
-    event.preventDefault();
+  const [email, setEmail] = useState("timse211@gmail.com");
+  const [password, setPassword] = useState("1234");
+
+  function handleSubmit(e) {
+    e.preventDefault();
     if (!email || !password) return;
+
     login(
       { email, password },
       {
+        onSuccess: (data) => {
+          if (data.mfa_required && data.temp_token) {
+            navigate(`/mfa?temp_token=${data.temp_token}`);
+          }
+        },
         onSettled: () => {
-          setEmail("");
           setPassword("");
         },
       },
@@ -29,31 +39,29 @@ function LoginForm() {
 
   return (
     <Form onSubmit={handleSubmit}>
-      <FormRow label="Email Address" orientation="vertical">
+      <FormRow label="Email" orientation="vertical">
         <Input
           type="email"
-          id="email"
           autoComplete="username"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={isLoading}
-        ></Input>
+        />
       </FormRow>
 
       <FormRow label="Password" orientation="vertical">
         <Input
           type="password"
-          id="password"
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           disabled={isLoading}
-        ></Input>
+        />
       </FormRow>
 
       <FormRow orientation="vertical">
         <Button disabled={isLoading}>
-          {!isLoading ? "Login" : <SpinnerMini />}
+          {isLoading ? <SpinnerMini /> : "Login"}
         </Button>
       </FormRow>
     </Form>

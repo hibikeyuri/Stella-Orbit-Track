@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { satellites } from "./data-satellites";
 
-import supabase from "@/services/supabase";
+import { apiFetch } from "@/services/http";
 import { Button } from "@/ui/button";
 
 export function Uploader() {
@@ -11,22 +11,42 @@ export function Uploader() {
   const queryClient = useQueryClient();
 
   async function deleteSatellites() {
-    const { error } = await supabase.from("satellites").delete().gt("id", 0);
-    if (error) console.log("Delete error:", error.message);
+    for (let i = 1; i <= satellites.length; i++) {
+      try {
+        await apiFetch(`/satellites/${i}`, {
+          method: "DELETE",
+        });
+      } catch (err) {
+        console.warn(`Failed to delete satellite ${i}:`, err);
+      }
+    }
   }
 
   async function createSatellites() {
-    const { error } = await supabase.from("satellites").insert(satellites);
-    if (error) console.log("Insert error:", error.message);
-
-    queryClient.invalidateQueries({ queryKey: ["satellites"] });
+    for (let i = 0; i < satellites.length; i++) {
+      try {
+        await apiFetch("/satellites/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(satellites[i]),
+        });
+      } catch (err) {
+        console.warn(`Failed to create satellite ${i + 1}:`, err);
+      }
+    }
   }
 
   async function uploadSatellites() {
     setIsLoading(true);
-    await deleteSatellites();
-    await createSatellites();
-    setIsLoading(false);
+    try {
+      await deleteSatellites();
+      await createSatellites();
+      queryClient.invalidateQueries({ queryKey: ["satellites"] });
+    } catch (err) {
+      console.error("Uploader error:", err);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -42,7 +62,7 @@ export function Uploader() {
       <h3>Satellite Data Uploader</h3>
 
       <Button onClick={uploadSatellites} disabled={isLoading}>
-        Upload Satellites
+        {isLoading ? "Uploading..." : "Upload Satellites"}
       </Button>
       <p>Use during development to reset and seed satellite table.</p>
     </div>
