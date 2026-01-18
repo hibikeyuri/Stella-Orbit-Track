@@ -9,8 +9,8 @@ import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 
 function LoginForm() {
-  const [email, setEmail] = useState("timse@example.com");
-  const [password, setPassword] = useState("jhdj1352");
+  const [email, setEmail] = useState("timse211@gmail.com");
+  const [password, setPassword] = useState("1234");
   const { login, isLoading } = useLogin();
 
   function handleSubmit(event) {

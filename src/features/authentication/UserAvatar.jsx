@@ -2,7 +2,10 @@ import { useUser } from "@/features/authentication/useUser";
 
 export default function UserAvatar() {
   const { user } = useUser();
-  const { fullName, avatar } = user.user_metadata;
+
+  if (!user) return null;
+
+  const { fullName, avatar } = user;
 
   return (
     <div className="flex items-center gap-3 text-[1.4rem] font-medium text-gray-600">

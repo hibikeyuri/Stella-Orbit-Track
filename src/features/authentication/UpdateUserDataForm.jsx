@@ -1,40 +1,37 @@
 import { useState } from "react";
 
-import { useUpdateUser } from "./useUpdateUser";
-import { useUser } from "./useUser";
-
 import Form from "@/components/Form";
 import FormRow from "@/components/FormRow";
+import { useUpdateUser } from "@/features/authentication/useUpdateUser";
+import { useUser } from "@/features/authentication/useUser";
 import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 
-function UpdateUserDataForm() {
-  // We don't need the loading state, and can immediately use the user data, because we know that it has already been loaded at this point
-  const {
-    user: {
-      email,
-      user_metadata: { fullName: currentFullName },
-    },
-  } = useUser();
-  console.log(currentFullName);
-
+export default function UpdateUserDataForm() {
+  const { user } = useUser();
   const { updateUser, isUpdating } = useUpdateUser();
+
+  const { email, fullName: currentFullName, avatar: currentAvatar } = user;
 
   const [fullName, setFullName] = useState(currentFullName);
   const [avatar, setAvatar] = useState(null);
 
-  function handleSubmit(e) {
+  if (!user) return null;
+
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!fullName) return;
-    updateUser(
-      { fullName, avatar },
-      {
-        onSuccess: () => {
-          setAvatar(null);
-          e.target.reset();
-        },
+
+    const formData = new FormData();
+    formData.append("fullName", fullName);
+    if (avatar) formData.append("avatar", avatar);
+
+    updateUser(formData, {
+      onSuccess: () => {
+        setAvatar(null);
+        e.target.reset();
       },
-    );
+    });
   }
 
   function handleCancel() {
@@ -61,12 +58,22 @@ function UpdateUserDataForm() {
       <FormRow label="Avatar image">
         <Input
           id="avatar"
-          accept="image/*" 
+          accept="image/*"
           type="file"
           onChange={(e) => setAvatar(e.target.files[0])}
           disabled={isUpdating}
         />
       </FormRow>
+
+      {currentAvatar && !avatar && (
+        <div className="mb-3">
+          <img
+            src={currentAvatar}
+            alt="Current avatar"
+            className="h-16 w-16 rounded-full object-cover"
+          />
+        </div>
+      )}
 
       <FormRow>
         <Button
@@ -82,5 +89,3 @@ function UpdateUserDataForm() {
     </Form>
   );
 }
-
-export default UpdateUserDataForm;
