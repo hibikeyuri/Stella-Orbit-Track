@@ -2,10 +2,12 @@ import logging
 import math
 from datetime import datetime, timedelta, timezone
 
+from fastapi import HTTPException, status
 from sgp4.api import Satrec, jday
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.models import Satellite
+from app.database.models import TLE, Satellite
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -15,13 +17,41 @@ class PropagationService:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def _get_satrec(self, satellite_id: int) -> Satrec:
-        satellite = await self.session.get(Satellite, satellite_id)
-        # print("我到了_get_satrec", satellite.line1, satellite.line2)
-        if not satellite:
-            raise ValueError(f"Satellite {satellite_id} not found")
+    async def _get_latest_tle(self, satellite_id: int) -> TLE | None:
+        stmt = (
+            select(TLE)
+            .where(TLE.satellite_id == satellite_id)
+            .order_by(TLE.created_at.desc())
+            .limit(1)
+        )
+        return await self.session.scalar(stmt)
 
-        return Satrec.twoline2rv(satellite.line1, satellite.line2)
+    async def _get_satellite_and_tle(self, satellite_id: int) -> tuple[Satellite, TLE]:
+        satellite = await self.session.get(Satellite, satellite_id)
+        if not satellite:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Satellite {satellite_id} not found",
+            )
+
+        tle = await self._get_latest_tle(satellite_id)
+        if not tle:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"TLE for satellite {satellite_id} not found",
+            )
+
+        if not tle.line1 or not tle.line2:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="TLE line1/line2 not found",
+            )
+
+        return satellite, tle
+
+    async def _get_satrec(self, satellite_id: int) -> Satrec:
+        _, tle = await self._get_satellite_and_tle(satellite_id)
+        return Satrec.twoline2rv(tle.line1, tle.line2)
 
     async def propagate(
         self,
@@ -39,14 +69,12 @@ class PropagationService:
             date.second + date.microsecond / 1e6,
         )
 
-        print(jd, fr)
-
         error, r, v = sat.sgp4(jd, fr)
-
-        print(r, v)
         if error != 0:
-            print("我進來了")
-            return None
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"SGP4 propagation error: {error}",
+            )
 
         return r, v
 
@@ -74,9 +102,6 @@ class PropagationService:
             at = datetime.now(timezone.utc)
 
         result = await self.propagate(satellite_id, at)
-        if not result:
-            return None
-
         r, _ = result
         geo = self.eci_to_geodetic(r)
 
@@ -85,6 +110,52 @@ class PropagationService:
             "lon": geo["longitude"],
             "alt": geo["altitude"],
             "timestamp": at,
+        }
+
+    async def propagate_with_geo(
+        self,
+        satellite_id: int,
+        at: datetime | None = None,
+    ) -> dict:
+        if at is None:
+            at = datetime.now(timezone.utc)
+
+        satellite, tle = await self._get_satellite_and_tle(satellite_id)
+        satrec = Satrec.twoline2rv(tle.line1, tle.line2)
+
+        jd, fr = jday(
+            at.year,
+            at.month,
+            at.day,
+            at.hour,
+            at.minute,
+            at.second + at.microsecond / 1e6,
+        )
+
+        error, r, v = satrec.sgp4(jd, fr)
+        if error != 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"SGP4 propagation error: {error}",
+            )
+
+        geo = self.eci_to_geodetic(r)
+
+        return {
+            "satellite_id": satellite.id,
+            "tle_id": tle.id,
+            "norad_id": satellite.norad_id,
+            "eci": {
+                "position_km": list(r),
+                "velocity_km_s": list(v),
+            },
+            "geodetic": {
+                "latitude": geo["latitude"],
+                "longitude": geo["longitude"],
+                "altitude": geo["altitude"],
+            },
+            "timestamp": at,
+            "frame": "TEME",
         }
 
     async def predict_next_flyover(
@@ -96,7 +167,8 @@ class PropagationService:
         duration_minutes: int = 1440,
         step_seconds: int = 30,
     ):
-        sat = await self._get_satrec(satellite_id)
+        satellite, tle = await self._get_satellite_and_tle(satellite_id)
+        sat = Satrec.twoline2rv(tle.line1, tle.line2)
 
         if start is None:
             start = datetime.now(timezone.utc)
@@ -131,12 +203,6 @@ class PropagationService:
                 )
             )
 
-            print(f"Time {t} Elevation {elevation:.2f}", flush=True)
-            print(
-                f"t={t}, lat_sat={math.degrees(lat_sat):.2f}, lon_sat={math.degrees(lon_sat):.2f}, elevation={elevation:.2f}",
-                flush=True,
-            )
-
             if elevation > 0 and rise is None:
                 rise = t
             if elevation > max_elev:
@@ -150,6 +216,12 @@ class PropagationService:
             return None
 
         return {
+            "satellite_id": satellite.id,
+            "tle_id": tle.id,
+            "observer_lat": observer_lat,
+            "observer_lon": observer_lon,
+            "duration_minutes": duration_minutes,
+            "step_seconds": step_seconds,
             "start": rise,
             "peak": peak,
             "end": set_,

@@ -1,4 +1,3 @@
-import { Satellite } from "lucide-react"; // Lucide Satellite Icon
 import { useEffect, useState } from "react";
 import {
   MapContainer,
@@ -9,14 +8,12 @@ import {
   useMap,
 } from "react-leaflet";
 
-import SatelliteCard from "../satellite/SatelliteCard";
-
 import { useTle } from "./useTle";
 
 import Spinner from "@/components/Spinner";
 import { useMoveBack } from "@/hooks/useMoveBack";
+import { getPropagationPosition } from "@/services/apiPropagation";
 import { Button } from "@/ui/button";
-import { getCurrentPosition } from "@/utils/algo-satellites";
 
 function RecenterMap({ position }) {
   const map = useMap();
@@ -35,29 +32,48 @@ function RecenterMap({ position }) {
 
 function TleDetail() {
   const { tle, isLoading } = useTle();
-  const line1 = tle?.satellites?.line1 ?? null;
-  const line2 = tle?.satellites?.line2 ?? null;
   const [pos, setPos] = useState(null);
   const [track, setTrack] = useState([]);
   const moveBack = useMoveBack();
 
   useEffect(() => {
-    if (!line1 || !line2) return;
+    if (!tle?.satellite_id) return;
+    let isActive = true;
 
-    const updatePosition = () => {
-      const p = getCurrentPosition(line1, line2);
-      setPos(p);
-      setTrack((prev) => [...prev, [p.lat, p.lon]]);
+    const updatePosition = async () => {
+      try {
+        const response = await getPropagationPosition(tle.satellite_id);
+        const data = response?.data;
+        if (!data?.geodetic) return;
+
+        const nextPos = {
+          lat: data.geodetic.latitude,
+          lon: data.geodetic.longitude,
+          alt: data.geodetic.altitude * 1000,
+          timestamp: new Date(data.timestamp),
+          eci: data.eci,
+          tle_id: data.tle_id,
+        };
+
+        if (!isActive) return;
+        setPos(nextPos);
+        setTrack((prev) => [...prev, [nextPos.lat, nextPos.lon]].slice(-360));
+      } catch (error) {
+        console.error("Failed to fetch propagation position", error);
+      }
     };
 
     updatePosition();
     const interval = setInterval(updatePosition, 5000);
 
-    return () => clearInterval(interval);
-  }, [line1, line2]);
+    return () => {
+      isActive = false;
+      clearInterval(interval);
+    };
+  }, [tle?.satellite_id]);
 
-  if (!pos) return <div>Calculating...</div>;
   if (isLoading) return <Spinner />;
+  if (!pos) return <div>Calculating...</div>;
 
   return (
     <>
@@ -85,9 +101,73 @@ function TleDetail() {
           <div className="mt-4 rounded-xl bg-slate-50 p-4">
             <h3 className="mb-2 text-sm font-medium text-gray-600">TLE Data</h3>
             <pre className="font-mono text-sm leading-relaxed whitespace-pre-wrap text-slate-700">
-              {tle.satellites.line1}
-              {tle.satellites.line2}
+              {tle.line1}
+              {"\n"}
+              {tle.line2}
             </pre>
+          </div>
+        </section>
+
+        {/* Orbital Parameters */}
+        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h2 className="mb-3 text-lg font-semibold text-gray-800">
+            Orbital Parameters
+          </h2>
+          <div className="grid grid-cols-2 gap-3 text-sm text-gray-700">
+            <div>
+              <p className="text-gray-500">Inclination</p>
+              <p className="font-mono text-base">
+                {tle.inclination?.toFixed?.(4) ?? "-"}°
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500">RAAN</p>
+              <p className="font-mono text-base">
+                {tle.raan?.toFixed?.(4) ?? "-"}°
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500">Eccentricity</p>
+              <p className="font-mono text-base">
+                {tle.eccentricity?.toFixed?.(6) ?? "-"}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500">Mean Motion</p>
+              <p className="font-mono text-base">
+                {tle.mean_motion?.toFixed?.(6) ?? "-"} rev/day
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500">Semi-major Axis</p>
+              <p className="font-mono text-base">
+                {tle.semi_major_axis?.toFixed?.(2) ?? "-"} km
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500">Orbital Period</p>
+              <p className="font-mono text-base">
+                {tle.period?.toFixed?.(2) ?? "-"} s
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500">Arg. of Perigee</p>
+              <p className="font-mono text-base">
+                {tle.argument_of_perigee?.toFixed?.(4) ?? "-"}°
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500">Mean Anomaly</p>
+              <p className="font-mono text-base">
+                {tle.mean_anomaly?.toFixed?.(4) ?? "-"}°
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500">Age (days)</p>
+              <p className="font-mono text-base">
+                {tle.age_days?.toFixed?.(2) ?? "-"}
+              </p>
+            </div>
           </div>
         </section>
 

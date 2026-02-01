@@ -36,6 +36,8 @@ class SatelliteUpdate(SatelliteBase):
 
 class TLEBase(BaseModel):
     name: str | None = None
+    line1: str | None = None
+    line2: str | None = None
     inclination: float | None = None
     eccentricity: float | None = None
     semi_major_axis: float | None = None
@@ -142,3 +144,52 @@ class SettingRead(SettingBase):
 
 class SettingUpdate(SettingBase):
     pass
+
+
+class ErrorResponse(BaseModel):
+    code: int
+    message: str
+
+
+class ECI(BaseModel):
+    position_km: list[float]
+    velocity_km_s: list[float]
+
+
+class Geodetic(BaseModel):
+    latitude: float
+    longitude: float
+    altitude: float
+
+
+class PropagationPositionData(BaseModel):
+    satellite_id: int
+    tle_id: int | None
+    norad_id: int | None
+    eci: ECI
+    geodetic: Geodetic
+    timestamp: datetime
+    frame: str = "TEME"
+
+
+class PropagationPositionResponse(BaseModel):
+    data: PropagationPositionData | None = None
+    error: ErrorResponse | None = None
+
+
+class FlyoverData(BaseModel):
+    satellite_id: int
+    tle_id: int | None
+    observer_lat: float
+    observer_lon: float
+    duration_minutes: int
+    step_seconds: int
+    start: datetime | None
+    peak: datetime | None
+    end: datetime | None
+    maxElevation: float
+
+
+class FlyoverResponse(BaseModel):
+    data: FlyoverData | None = None
+    error: ErrorResponse | None = None

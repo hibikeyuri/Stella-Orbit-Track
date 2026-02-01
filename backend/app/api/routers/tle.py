@@ -9,6 +9,11 @@ from ..dependencies import TLEServiceDep
 router = APIRouter(prefix="/tle", tags=["TLE"])
 
 
+@router.get("/", response_model=Sequence[TLERead])
+async def list_tles(service: TLEServiceDep):
+    return await service.list_all()
+
+
 @router.get("/{id}", response_model=TLERead)
 async def get_tle(id: int, service: TLEServiceDep):
     tle = await service.get(id)

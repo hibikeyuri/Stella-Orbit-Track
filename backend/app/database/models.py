@@ -1,6 +1,5 @@
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Dict
 from uuid import UUID, uuid4
 
 from pydantic import EmailStr
@@ -31,6 +30,8 @@ class TLE(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     satellite_id: int | None = Field(default=None, foreign_key="satellite.id")
     name: str | None = Field(default=None, description="TLE name")
+    line1: str | None = Field(default=None, description="TLE first line")
+    line2: str | None = Field(default=None, description="TLE second line")
     inclination: float | None = Field(default=None, description="inclination")
     eccentricity: float | None = Field(default=None, description="eccentricity")
     semi_major_axis: float | None = Field(default=None, description="semi_major_axis")
@@ -86,19 +87,19 @@ class User(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc), description="build time"
     )
     fullName: str | None = Field(default=None, description="fullName")
-    
+
     email: EmailStr | None = Field(
         default=None, unique=True, index=True, description="email"
     )
     email_verified: bool = Field(default=False, description="email_verified")
 
     provider: str = Field(default=False, description="third-party provider")
-    provider_user_id: str =Field(default=False, description="provider id")
+    provider_user_id: str = Field(default=False, description="provider id")
 
     totp_secret: str | None = Field(default=None, description="totp_secret")
     mfa_enabled: bool = Field(default=False, description="enable_mfa")
     mfa_enabled_at: datetime | None = Field(default=None)
-    
+
     nationalID: str | None = Field(default=None, unique=True, description="nationalID")
     nationality: str | None = Field(default=None, description="nationality")
     countryFlag: str | None = Field(default=None, description="countryFlag")

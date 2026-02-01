@@ -59,8 +59,20 @@ class GoogleSettings(BaseSettings):
     model_config = _base_config
 
 
+class CelestrakSettings(BaseSettings):
+    CELESTRAK_BASE_URL: str
+    CELESTRAK_GROUP: str
+    CELESTRAK_FORMAT: str
+
+    SATELLITE_SYNC_INTERVAL_SECONDS: int = 3600
+    TLE_REFRESH_INTERVAL_SECONDS: int = 900
+
+    model_config = _base_config
+
+
 app_settings = AppSettings()
 security_settings = SecuritySettings()
 notification_settings = NotificationSettings()
 github_settings = GithubSettings()
 google_settings = GoogleSettings()
+celestrak_settings = CelestrakSettings()

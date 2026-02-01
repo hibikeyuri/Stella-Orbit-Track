@@ -36,6 +36,8 @@ backend/.vscode
 backend/.mypy_cache
 backend/.env
 backend/*.db
+backend/.github/
 
 # Environment Variables
 .env
+backend/requirements-dev.txt
