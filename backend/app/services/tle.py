@@ -85,6 +85,26 @@ class TLEService(BaseService):
 
         return await self._add(tle)
 
+    async def upsert(self, existing_tle: TLE, sat_data: dict) -> TLE:
+        """Update an existing TLE record in-place with new line data."""
+        if not sat_data.get("line2"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="line2 is required for upsert",
+            )
+
+        orbital_params = self._parse_line2(sat_data["line2"])
+
+        existing_tle.name = sat_data.get("name")
+        existing_tle.line1 = sat_data["line1"]
+        existing_tle.line2 = sat_data["line2"]
+        existing_tle.created_at = datetime.now(timezone.utc)
+
+        for key, value in orbital_params.items():
+            setattr(existing_tle, key, value)
+
+        return await self._update(existing_tle)
+
     async def create_from_satellite(self, satellite_id: int) -> TLE:
         """
         從 Satellite 的 line1 / line2 計算軌道參數並建立 TLE 紀錄

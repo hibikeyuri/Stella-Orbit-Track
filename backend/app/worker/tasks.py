@@ -113,7 +113,7 @@ async def sync_satellites_from_celestrak() -> int:
 
 
 async def refresh_tle_history() -> int:
-    """Create a new TLE record for satellites with updated line1/line2."""
+    """Upsert TLE records: update existing or insert new. Only one TLE per satellite."""
     async with AsyncSession(engine) as session:
         stmt = select(Satellite).where(
             Satellite.line1.is_not(None),
@@ -135,7 +135,7 @@ async def refresh_tle_history() -> int:
         ]
 
         service = TLEService(session)
-        inserted = 0
+        upserted = 0
         for sat in snapshot:
             latest_stmt = (
                 select(TLE)
@@ -145,20 +145,26 @@ async def refresh_tle_history() -> int:
             )
             latest = await session.scalar(latest_stmt)
 
+            # Skip if TLE data hasn't changed
             if latest and latest.line1 == sat["line1"] and latest.line2 == sat["line2"]:
                 continue
 
-            payload = TLECreate(
-                satellite_id=sat["id"],
-                name=sat["name"],
-                line1=sat["line1"],
-                line2=sat["line2"],
-            )
-            await service.add(payload)
-            inserted += 1
+            if latest:
+                # Update existing TLE record in-place
+                await service.upsert(latest, sat)
+            else:
+                # No TLE exists yet — insert a new one
+                payload = TLECreate(
+                    satellite_id=sat["id"],
+                    name=sat["name"],
+                    line1=sat["line1"],
+                    line2=sat["line2"],
+                )
+                await service.add(payload)
+            upserted += 1
 
-        logger.info("Inserted %s new TLE history records", inserted)
-        return inserted
+        logger.info("Upserted %s TLE records", upserted)
+        return upserted
 
 
 async def _sleep_until(stop_event: asyncio.Event, seconds: int) -> None:

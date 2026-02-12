@@ -26,6 +26,7 @@ class BaseService:
 
     async def _delete(self, entity):
         await self.session.delete(entity)
+        await self.session.commit()
 
     async def _list(self, **filters):
         stmt = self.session.execute(select(self.model))
