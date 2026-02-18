@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 export function usePaginationParams(
   pageSizeOptions = [10, 20, 50, 100],
   apiTotalPages = null,
+  filterField = "semi_major_axis",
 ) {
   const [searchParams, setSearchParams] = useSearchParams();
   const prevFilterRef = useRef(null);
@@ -20,11 +21,11 @@ export function usePaginationParams(
   const defaultPageSize = validOptions[0];
 
   // parse URL parameters: filter
-  const filterValue = searchParams.get("semi_major_axis");
+  const filterValue = searchParams.get(filterField);
   const filter =
     !filterValue || filterValue === "all"
       ? null
-      : { field: "semi_major_axis", value: filterValue };
+      : { field: filterField, value: filterValue };
 
   // parse URL parameters: sortBy
   const sortByRaw = searchParams.get("sortBy");
