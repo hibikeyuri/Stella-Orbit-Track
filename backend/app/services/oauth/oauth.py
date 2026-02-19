@@ -42,13 +42,10 @@ class OauthService(BaseService):
 
             return new_user
 
-        oauth = User(
-            provider=profile["provider"],
-            provider_user_id=profile["provider_user_id"],
-            email=profile["email"],
-            created_at=utc_now(),
-        )
-        await self._update(oauth)
+        # Link OAuth provider to existing user (same email)
+        user.provider = profile["provider"]
+        user.provider_user_id = profile["provider_user_id"]
+        await self._update(user)
 
         return user
 

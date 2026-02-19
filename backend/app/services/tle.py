@@ -24,10 +24,10 @@ class TLEService(BaseService):
         return tle
 
     async def list_by_satellite(self, satellite_id: int):
-        return await self._list2(satellite_id=satellite_id)
+        return await self._list(satellite_id=satellite_id)
 
     async def list_all(self):
-        return await self._list2()
+        return await self._list()
 
     def _parse_line2(self, line2: str) -> dict:
         parts = line2.split()

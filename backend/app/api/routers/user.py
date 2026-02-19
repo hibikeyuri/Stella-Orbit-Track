@@ -2,7 +2,7 @@ import io
 from typing import Annotated
 
 import qrcode
-from fastapi import APIRouter, Depends, Form, Request, Response
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.templating import Jinja2Templates
 from pydantic import EmailStr
@@ -38,7 +38,10 @@ async def login_user(
     user = await service.authenticate_user(request_form.username, request_form.password)
 
     if not user:
-        return {"error": "username or password is wrong!"}
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="username or password is wrong",
+        )
 
     if await mfa_service.check_mfa(request_form.username):
         temp_token = await mfa_service._generate_mfa_token(request_form.username)
@@ -63,7 +66,10 @@ async def login_mfa(
 ):
     valid = await mfa_service.verify_code(temp_token, code)
     if not valid:
-        return {"detail": "Invalid MFA code"}, 401
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid MFA code",
+        )
 
     access_token = await service._generate_token_mfa(temp_token)
     return {
@@ -152,11 +158,13 @@ async def verify_mfa_code(
     code: Annotated[str, Form()],
     mfa_service: MFAServiceDep,
 ):
-    print(code)
     valid = await mfa_service.verify_code(temp_token, code)
 
     if not valid:
-        return {"detail": "Invalid code"}, 400
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid MFA code",
+        )
 
     return {"detail": "MFA enabled successfully"}
 

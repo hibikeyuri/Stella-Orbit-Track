@@ -29,14 +29,6 @@ class BaseService:
         await self.session.commit()
 
     async def _list(self, **filters):
-        stmt = self.session.execute(select(self.model))
-        for attr, value in filters.items():
-            stmt = stmt.where(getattr(self.model, attr) == value)
-        result = await self.session.execute(stmt)
-
-        return result.scalars().all()
-
-    async def _list2(self, **filters):
         stmt = select(self.model)
 
         for attr, value in filters.items():

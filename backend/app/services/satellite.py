@@ -23,7 +23,7 @@ class SatelliteService(BaseService):
         return satellite
 
     async def list_all(self):
-        return await self._list2()
+        return await self._list()
 
     async def add(self, satellite_create: SatelliteCreate) -> Satellite:
         satellite = Satellite(
