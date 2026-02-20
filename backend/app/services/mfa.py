@@ -56,11 +56,9 @@ class MFAService(BaseService):
 
         mfa_user = await self._get(UUID(token_data["id"]))
 
-        # generate TOTP secret
+        # generate TOTP secret (don't enable yet — wait for verify)
         secret = pyotp.random_base32()
         mfa_user.totp_secret = secret
-        mfa_user.mfa_enabled = True
-        mfa_user.mfa_enabled_at = utc_now()
 
         await self._update(mfa_user)
 
@@ -89,7 +87,15 @@ class MFAService(BaseService):
 
         totp = pyotp.TOTP(mfa_user.totp_secret)
 
-        return totp.verify(code)
+        is_valid = totp.verify(code)
+
+        # If this is the first successful verification, activate MFA
+        if is_valid and not mfa_user.mfa_enabled:
+            mfa_user.mfa_enabled = True
+            mfa_user.mfa_enabled_at = utc_now()
+            await self._update(mfa_user)
+
+        return is_valid
 
     async def disable_mfa(self, id: UUID):
         mfa_user = await self._get(id)

@@ -156,9 +156,15 @@ async def generate_mfa_qrcode(uri: str):
 @router.post("/enable_mfa_verify")
 async def verify_mfa_code(
     temp_token: str,
-    code: Annotated[str, Form()],
-    mfa_service: MFAServiceDep,
+    code: Annotated[str, Form()] = None,
+    mfa_service: MFAServiceDep = None,
 ):
+    if not code:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Verification code is required",
+        )
+
     valid = await mfa_service.verify_code(temp_token, code)
 
     if not valid:
