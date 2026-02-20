@@ -20,7 +20,7 @@ from app.utils import (
     utc_now,
 )
 
-from ..schemas import UserCreate
+from ..schemas import UserCreate, UserUpdate
 
 password_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
@@ -52,6 +52,34 @@ class UserService(BaseService):
 
         new_user = await self._add(new_user)
 
+        await self._send_verification_email(new_user, router_prefix)
+        return new_user
+
+    async def update_user(self, user: User, data: UserUpdate) -> User:
+        update_data = data.model_dump(exclude_unset=True)
+
+        # If password is being updated, hash it
+        if "password" in update_data:
+            pwd = update_data.pop("password")
+            if pwd is not None:
+                try:
+                    update_data["password_hash"] = password_context.hash(pwd)
+                except PasswordValueError:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Invalid password",
+                    )
+
+        # Prevent clients from overwriting sensitive fields
+        for key in ("provider", "provider_user_id", "mfa_enabled", "email_verified"):
+            update_data.pop(key, None)
+
+        for attr, value in update_data.items():
+            setattr(user, attr, value)
+
+        return await self._update(user)
+
+    async def _send_verification_email(self, new_user: User, router_prefix: str):
         token = generate_url_safe_token(
             {"email": new_user.email, "id": str(new_user.id)}
         )

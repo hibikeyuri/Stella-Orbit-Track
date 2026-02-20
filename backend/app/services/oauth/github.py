@@ -49,8 +49,6 @@ class GitHubOAuthProvider:
             email_resp.raise_for_status()
             emails = email_resp.json()
 
-            print(emails)
-
             primary_email = None
             for e in emails:
                 if e.get("primary") and e.get("verified"):
@@ -62,4 +60,5 @@ class GitHubOAuthProvider:
             "provider_user_id": str(user["id"]),
             "email": str(primary_email),
             "name": user.get("name") or user.get("login"),
+            "avatar_url": user.get("avatar_url"),
         }

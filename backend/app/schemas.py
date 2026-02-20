@@ -96,9 +96,12 @@ class PropagateCacheUpdate(PropagateCacheBase):
 class UserBase(BaseModel):
     fullName: str | None = None
     email: EmailStr | None = None
+    avatar_url: str | None = None
     nationalID: str | None = None
     nationality: str | None = None
     countryFlag: str | None = None
+    address: str | None = None
+    zip_code: int | None = None
 
     mfa_enabled: bool | None = None
 

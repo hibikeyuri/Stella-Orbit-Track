@@ -6,6 +6,7 @@ class OAuthProfile(TypedDict):
     provider_user_id: str
     email: str
     name: str
+    avatar_url: str | None
 
 
 class OAuthProvider(Protocol):

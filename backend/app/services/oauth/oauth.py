@@ -33,6 +33,7 @@ class OauthService(BaseService):
             new_user = User(
                 email=profile["email"],
                 fullName=profile["name"],
+                avatar_url=profile.get("avatar_url"),
                 provider=profile["provider"],
                 provider_user_id=profile["provider_user_id"],
                 email_verified=True,
@@ -45,6 +46,8 @@ class OauthService(BaseService):
         # Link OAuth provider to existing user (same email)
         user.provider = profile["provider"]
         user.provider_user_id = profile["provider_user_id"]
+        if profile.get("avatar_url") and not user.avatar_url:
+            user.avatar_url = profile["avatar_url"]
         await self._update(user)
 
         return user

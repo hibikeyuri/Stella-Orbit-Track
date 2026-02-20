@@ -18,9 +18,10 @@ from app.core.security import oauth2_scheme
 from app.database.redis import add_jti_to_blacklist
 from app.utils import TEMPLATE_DIR
 
-from ...schemas import UserCreate, UserRead
+from ...schemas import UserCreate, UserRead, UserUpdate
 
 router = APIRouter(prefix="/user", tags=["User"])
+templates = Jinja2Templates(TEMPLATE_DIR)
 
 
 ### Register a user
@@ -82,7 +83,6 @@ async def login_mfa(
 ### Input MFA
 @router.get("/mfa_verify_page")
 async def mfa_verify_page(request: Request, temp_token: str):
-    templates = Jinja2Templates(TEMPLATE_DIR)
     return templates.TemplateResponse(
         "mfa/mfa_verify.html",
         {
@@ -109,7 +109,6 @@ async def get_enable_mfa_page(
         return {"error": "no temp_token"}
 
     mfa_data = await service._enable_mfa(temp_token)
-    templates = Jinja2Templates(TEMPLATE_DIR)
 
     return templates.TemplateResponse(
         request=request,
@@ -177,6 +176,16 @@ async def get_user_profile(user: UserDep):
     return user
 
 
+### Update user profile
+@router.patch("/me", response_model=UserRead)
+async def update_user_profile(
+    data: UserUpdate,
+    user: UserDep,
+    service: UserServiceDep,
+):
+    return await service.update_user(user, data)
+
+
 ### test oauth2 bearer function
 @router.post("/test")
 async def get_test(token: Annotated[str, Depends(oauth2_scheme)]):
@@ -200,8 +209,6 @@ async def forgot_password(email: EmailStr, service: UserServiceDep):
 ### Password Reset Form
 @router.get("/reset_password_form")
 async def get_reset_password_form(request: Request, token: str):
-    templates = Jinja2Templates(TEMPLATE_DIR)
-
     return templates.TemplateResponse(
         request=request,
         name="password/reset.html",
@@ -221,7 +228,6 @@ async def reset_password(
 ):
     is_success = await service.reset_password(token, password)
 
-    templates = Jinja2Templates(TEMPLATE_DIR)
     return templates.TemplateResponse(
         request=request,
         name="password/reset_success.html"
@@ -235,6 +241,5 @@ async def reset_password(
 async def logout_user(
     token_data: Annotated[dict, Depends(get_access_token)],
 ):
-    print("token_data:", token_data)
     await add_jti_to_blacklist(token_data["jti"])
     return {"detail": "Successfully logged out"}

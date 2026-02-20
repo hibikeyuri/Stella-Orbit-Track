@@ -87,6 +87,7 @@ class User(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc), description="build time"
     )
     fullName: str | None = Field(default=None, description="fullName")
+    avatar_url: str | None = Field(default=None, description="avatar url")
 
     email: EmailStr | None = Field(
         default=None, unique=True, index=True, description="email"

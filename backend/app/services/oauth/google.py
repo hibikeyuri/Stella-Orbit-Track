@@ -43,4 +43,5 @@ class GoogleOAuthProvider:
             "provider_user_id": data["id"],
             "email": data["email"],
             "name": data.get("name", ""),
+            "avatar_url": data.get("picture"),
         }
