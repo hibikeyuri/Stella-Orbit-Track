@@ -1,4 +1,3 @@
-import re
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
@@ -8,18 +7,16 @@ from fastapi.responses import JSONResponse
 from scalar_fastapi import get_scalar_api_reference
 
 from app.api.router import master_router
+from app.config import app_settings
 from app.database.session import create_db_tables
 from app.worker.tasks import start_scheduler, stop_scheduler
 
-ALLOWED_ORIGIN_PATTERNS = [
-    re.compile(r"^https?://localhost:\d+$"),
-    re.compile(r"^https?://127\.0\.0\.1:\d+$"),
-    re.compile(r"^https://[a-z0-9-]+\.trycloudflare\.com$"),
-]
-
-
-def _is_allowed_origin(origin: str) -> bool:
-    return any(p.match(origin) for p in ALLOWED_ORIGIN_PATTERNS)
+# Dev-friendly regex: always allow localhost / 127.0.0.1 (any port)
+# and Cloudflare quick-tunnel subdomains.
+_DEV_ORIGIN_REGEX = (
+    r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"
+    r"|^https://[a-z0-9-]+\.trycloudflare\.com$"
+)
 
 
 @asynccontextmanager
@@ -64,7 +61,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$|^https://[a-z0-9-]+\.trycloudflare\.com$",
+    allow_origins=app_settings.cors_origins,  # production origins from .env
+    allow_origin_regex=_DEV_ORIGIN_REGEX,  # dev / tunnel origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

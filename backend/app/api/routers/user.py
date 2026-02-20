@@ -13,6 +13,7 @@ from app.api.dependencies import (
     UserServiceDep,
     get_access_token,
 )
+from app.config import app_settings
 from app.core.security import oauth2_scheme
 from app.database.redis import add_jti_to_blacklist
 from app.utils import TEMPLATE_DIR
@@ -87,7 +88,7 @@ async def mfa_verify_page(request: Request, temp_token: str):
         {
             "request": request,
             "temp_token": temp_token,
-            "verify_url": f"http://localhost:8000/user/token/mfa?temp_token={temp_token}",
+            "verify_url": f"{app_settings.base_url}/user/token/mfa?temp_token={temp_token}",
         },
     )
 
@@ -116,7 +117,8 @@ async def get_enable_mfa_page(
         context={
             "request": request,
             "otpauth_uri": str(mfa_data["otpauth_uri"]),
-            "verify_url": f"http://localhost:8000/user/enable_mfa_verify?temp_token={temp_token}",
+            "qrcode_url": f"{app_settings.base_url}/user/mfa/qrcode?uri={mfa_data['otpauth_uri']}",
+            "verify_url": f"{app_settings.base_url}/user/enable_mfa_verify?temp_token={temp_token}",
         },
     )
 
@@ -204,7 +206,7 @@ async def get_reset_password_form(request: Request, token: str):
         request=request,
         name="password/reset.html",
         context={
-            "reset_url": f"http://localhost:8000/user/reset_password?token={token}"
+            "reset_url": f"{app_settings.base_url}/user/reset_password?token={token}"
         },
     )
 

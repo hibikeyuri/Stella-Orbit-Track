@@ -16,6 +16,29 @@ _base_config = SettingsConfigDict(
 class AppSettings(BaseSettings):
     APP_NAME: str = "Stella-Orbital-Track"
     APP_DOMAIN: str = "localhost:8000"
+    APP_PROTOCOL: str = "http"
+
+    CORS_ALLOWED_ORIGINS: str = ""
+
+    DATABASE_URL: str = "sqlite+aiosqlite:///sqlite.db"
+
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+
+    model_config = _base_config
+
+    @property
+    def base_url(self) -> str:
+        """Canonical backend URL used for email links, OAuth callbacks, etc."""
+        return f"{self.APP_PROTOCOL}://{self.APP_DOMAIN}"
+
+    @property
+    def cors_origins(self) -> list[str]:
+        """Parse CORS_ALLOWED_ORIGINS into a list."""
+        if not self.CORS_ALLOWED_ORIGINS:
+            return []
+        return [o.strip() for o in self.CORS_ALLOWED_ORIGINS.split(",") if o.strip()]
 
 
 class SecuritySettings(BaseSettings):
@@ -62,7 +85,7 @@ class GoogleSettings(BaseSettings):
 class CelestrakSettings(BaseSettings):
     CELESTRAK_BASE_URL: str
     CELESTRAK_GROUP: str
-    CELESTRAK_FORMAT: str
+    CELESTRAK_FORMAT: str = "json"
 
     SATELLITE_SYNC_INTERVAL_SECONDS: int = 3600
     TLE_REFRESH_INTERVAL_SECONDS: int = 900

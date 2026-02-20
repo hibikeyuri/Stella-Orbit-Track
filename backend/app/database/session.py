@@ -4,18 +4,16 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlmodel import SQLModel
 
-DATABASE_URL = "sqlite+aiosqlite:///sqlite.db"
+from app.config import app_settings
 
 engine = create_async_engine(
-    DATABASE_URL,
+    app_settings.DATABASE_URL,
     echo=True,
     future=True,
 )
 
 
 async def create_db_tables() -> None:
-    import app.database.models
-    
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
 

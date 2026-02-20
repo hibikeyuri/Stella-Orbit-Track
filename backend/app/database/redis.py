@@ -1,9 +1,11 @@
 from redis.asyncio import Redis
 
+from app.config import app_settings
+
 _token_blacklist = Redis(
-    host="localhost",
-    port=6379,
-    db=0,
+    host=app_settings.REDIS_HOST,
+    port=app_settings.REDIS_PORT,
+    db=app_settings.REDIS_DB,
 )
 
 

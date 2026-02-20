@@ -64,7 +64,7 @@ class UserService(BaseService):
             subject="Verify Your Account With Stella Orbital Track",
             context={
                 "username": new_user.fullName,
-                "verification_url": f"http://{app_settings.APP_DOMAIN}/{router_prefix}/verify?token={token}",
+                "verification_url": f"{app_settings.base_url}/{router_prefix}/verify?token={token}",
             },
             template_name="mail_email_verify.html",
         )
@@ -169,7 +169,7 @@ class UserService(BaseService):
             subject="Stella Orbital Track Account Password Reset",
             context={
                 "username": user.fullName,
-                "reset_url": f"http://{app_settings.APP_DOMAIN}/{router_prefix}/reset_password_form?token={token}",
+                "reset_url": f"{app_settings.base_url}/{router_prefix}/reset_password_form?token={token}",
             },
             template_name="mail_password_reset.html",
         )
