@@ -35,7 +35,7 @@ function Account() {
         {mfaUri ? (
           <div>
             <img
-              src={`http://localhost:8000/user/mfa/qrcode?uri=${encodeURIComponent(mfaUri)}`}
+              src={`${import.meta.env.VITE_API_BASE_URL}/user/mfa/qrcode?uri=${encodeURIComponent(mfaUri)}`}
               alt="MFA QR code"
             />
             <p>Scan this with your Authenticator app</p>
