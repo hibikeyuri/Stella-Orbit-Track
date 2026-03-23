@@ -10,7 +10,7 @@ function StyledTable({ children, role = "table" }) {
   return (
     <div
       role={role}
-      className="border-grey-200 min-w-[1400px] rounded-lg border text-[1rem]"
+      className="min-w-[1400px] overflow-hidden rounded-lg border border-gray-200 text-[1rem] dark:border-gray-700"
     >
       {children}
     </div>
@@ -33,7 +33,7 @@ function StyledHeader({ children, columns, role = "row" }) {
     <CommonRow
       role={role}
       columns={columns}
-      className="border-grey-100 bg-grey-300 text-grey-600 border-b py-2 font-semibold uppercase"
+      className="border-b border-gray-200 bg-gray-100 py-2 font-semibold uppercase text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
     >
       {children}
     </CommonRow>
@@ -42,7 +42,7 @@ function StyledHeader({ children, columns, role = "row" }) {
 
 function StyledBody({ children }) {
   return (
-    <div className="bg-grey-0 my-1 min-w-[1400px]">{children}</div>
+    <div className="my-1 min-w-[1400px] bg-white dark:bg-gray-900">{children}</div>
   );
 }
 
@@ -56,7 +56,7 @@ function Footer({ children }) {
   if (!children) return null;
 
   return (
-    <div className="bg-grey-50 flex justify-center px-6 py-3">
+    <div className="flex justify-center bg-gray-50 px-6 py-3 dark:bg-gray-800">
       {children}
     </div>
   );

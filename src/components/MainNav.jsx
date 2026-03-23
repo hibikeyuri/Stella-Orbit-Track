@@ -1,32 +1,37 @@
 import clsx from "clsx";
 import {
-  LayoutDashboard,
-  SatelliteDish,
-  Users,
-  Settings,
   Antenna,
-  Globe,
-  Radar,
   GitCompareArrows,
+  Globe,
+  LayoutDashboard,
+  Radar,
+  SatelliteDish,
+  Settings,
+  Users,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
-// 自訂 Span component，處理 isActive 狀態與 className 合併
 function Span({ isActive = false, className = "", children }) {
-  const mergedClassName = clsx(
-    "h-6 w-6 text-gray-400 transition-colors duration-300",
-    "group-hover:text-brand-600",
-    isActive && "text-brand-600",
-    className,
+  return (
+    <span
+      className={clsx(
+        "h-5 w-5 transition-colors duration-300",
+        "text-gray-400 group-hover:text-brand-600",
+        "dark:text-gray-500 dark:group-hover:text-brand-200",
+        isActive && "text-brand-600 dark:text-brand-200",
+        className,
+      )}
+    >
+      {children}
+    </span>
   );
-  return <span className={mergedClassName}>{children}</span>;
 }
 
-function MainNav() {
+function MainNav({ onNavigate }) {
   const links = [
     { to: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
     { to: "/satellites", icon: <SatelliteDish />, label: "Satellites" },
-    { to: "/tles", icon: <Antenna />, label: "Tles" },
+    { to: "/tles", icon: <Antenna />, label: "TLEs" },
     { to: "/tracker", icon: <Globe />, label: "Live Tracker" },
     { to: "/sky-plot", icon: <Radar />, label: "Sky Plot" },
     { to: "/compare", icon: <GitCompareArrows />, label: "Compare" },
@@ -36,16 +41,18 @@ function MainNav() {
 
   return (
     <nav>
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col gap-1">
         {links.map(({ to, icon, label }) => (
           <li key={to}>
             <NavLink
               to={to}
+              onClick={onNavigate}
               className={({ isActive }) =>
                 clsx(
-                  "group flex items-center gap-3 rounded-sm px-6 py-3 text-[1.6rem] font-medium transition-all duration-300",
-                  "text-gray-600 hover:bg-gray-50 hover:text-gray-800",
-                  isActive && "bg-gray-50 text-gray-800",
+                  "group flex items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium transition-all duration-200",
+                  "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
+                  "dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100",
+                  isActive && "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100",
                 )
               }
             >

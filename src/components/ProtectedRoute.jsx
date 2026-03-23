@@ -20,7 +20,12 @@ function ProtectedRoute({ children }) {
   );
 
   // 2. While loading, show a spinner
-  if (isLoading) return <Spinner />;
+  if (isLoading)
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-950">
+        <Spinner />
+      </div>
+    );
 
   // 4. otherwise render app
   if (isAuthenticated) return children;
