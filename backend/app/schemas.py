@@ -225,3 +225,90 @@ class PaginatedResponse(BaseModel, Generic[T]):
     page: int
     page_size: int
     total_pages: int
+
+
+# ── Multi-satellite batch position ─────────────────────────────
+class MultiSatPosition(BaseModel):
+    satellite_id: int
+    norad_id: int | None
+    name: str | None
+    lat: float
+    lon: float
+    alt: float
+    velocity_km_s: float
+
+
+class MultiSatPositionResponse(BaseModel):
+    data: list[MultiSatPosition]
+    error: ErrorResponse | None = None
+
+
+# ── Conjunction analysis ────────────────────────────────────────
+class ConjunctionPosition(BaseModel):
+    lat: float
+    lon: float
+    alt: float
+
+
+class ConjunctionEvent(BaseModel):
+    time: str
+    distance_km: float
+    sat_a: ConjunctionPosition
+    sat_b: ConjunctionPosition
+
+
+class ConjunctionData(BaseModel):
+    sat_id_a: int
+    sat_id_b: int
+    duration_hours: int
+    threshold_km: float
+    closest_approach_km: float
+    closest_approach_time: str
+    events: list[ConjunctionEvent]
+
+
+class ConjunctionResponse(BaseModel):
+    data: ConjunctionData | None = None
+    error: ErrorResponse | None = None
+
+
+# ── Sky pass track (polar plot data) ───────────────────────────
+class SkyTrackPoint(BaseModel):
+    time: str
+    azimuth: float
+    elevation: float
+
+
+class SkyPassData(BaseModel):
+    satellite_id: int
+    norad_id: int | None
+    name: str | None
+    observer_lat: float
+    observer_lon: float
+    rise_time: str
+    set_time: str
+    max_elevation: float
+    track: list[SkyTrackPoint]
+
+
+class SkyPassResponse(BaseModel):
+    data: SkyPassData | None = None
+    error: ErrorResponse | None = None
+
+
+# ── Orbital decay estimation ───────────────────────────────────
+class OrbitalDecayData(BaseModel):
+    satellite_id: int
+    norad_id: int | None
+    name: str | None
+    altitude_km: float
+    mean_motion: float
+    ndot: float
+    bstar: float
+    estimated_days_to_decay: float | None
+    risk_level: str
+
+
+class OrbitalDecayResponse(BaseModel):
+    data: OrbitalDecayData | None = None
+    error: ErrorResponse | None = None

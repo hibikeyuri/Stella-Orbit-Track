@@ -305,3 +305,266 @@ class PropagationService:
             "end": set_,
             "maxElevation": max_elev,
         }
+
+    # ── Feature: Multi-satellite batch position ────────────────────
+    async def get_multi_positions(
+        self,
+        satellite_ids: list[int],
+        at: datetime | None = None,
+    ) -> list[dict]:
+        """Get current positions for multiple satellites in one call."""
+        if at is None:
+            at = datetime.now(timezone.utc)
+
+        jd, fr = _jday_from_datetime(at)
+        results = []
+
+        for sid in satellite_ids:
+            try:
+                satellite, tle = await self._get_satellite_and_tle(sid)
+                satrec = Satrec.twoline2rv(tle.line1, tle.line2)
+                e, r, v = satrec.sgp4(jd, fr)
+                if e != 0:
+                    continue
+                geo = eci_to_geodetic(r, at)
+                speed = math.sqrt(v[0] ** 2 + v[1] ** 2 + v[2] ** 2)
+                results.append({
+                    "satellite_id": satellite.id,
+                    "norad_id": satellite.norad_id,
+                    "name": satellite.name,
+                    "lat": geo["latitude"],
+                    "lon": geo["longitude"],
+                    "alt": geo["altitude"],
+                    "velocity_km_s": speed,
+                })
+            except HTTPException:
+                continue
+
+        return results
+
+    # ── Feature: Conjunction (close approach) analysis ─────────────
+    async def predict_conjunction(
+        self,
+        sat_id_a: int,
+        sat_id_b: int,
+        duration_hours: int = 24,
+        step_seconds: int = 60,
+        threshold_km: float = 50.0,
+    ) -> list[dict]:
+        """Find close approaches between two satellites within a time window."""
+        _, tle_a = await self._get_satellite_and_tle(sat_id_a)
+        _, tle_b = await self._get_satellite_and_tle(sat_id_b)
+
+        sat_a = Satrec.twoline2rv(tle_a.line1, tle_a.line2)
+        sat_b = Satrec.twoline2rv(tle_b.line1, tle_b.line2)
+
+        now = datetime.now(timezone.utc)
+        events = []
+        min_dist = float("inf")
+        min_time = now
+
+        steps = int(duration_hours * 3600 / step_seconds)
+        for i in range(steps):
+            t = now + timedelta(seconds=i * step_seconds)
+            jd, fr = _jday_from_datetime(t)
+
+            e1, r1, _ = sat_a.sgp4(jd, fr)
+            e2, r2, _ = sat_b.sgp4(jd, fr)
+            if e1 != 0 or e2 != 0:
+                continue
+
+            dx = r1[0] - r2[0]
+            dy = r1[1] - r2[1]
+            dz = r1[2] - r2[2]
+            dist = math.sqrt(dx * dx + dy * dy + dz * dz)
+
+            if dist < min_dist:
+                min_dist = dist
+                min_time = t
+
+            if dist < threshold_km:
+                geo_a = eci_to_geodetic(r1, t)
+                geo_b = eci_to_geodetic(r2, t)
+                events.append({
+                    "time": t.isoformat(),
+                    "distance_km": round(dist, 3),
+                    "sat_a": {"lat": geo_a["latitude"], "lon": geo_a["longitude"], "alt": geo_a["altitude"]},
+                    "sat_b": {"lat": geo_b["latitude"], "lon": geo_b["longitude"], "alt": geo_b["altitude"]},
+                })
+
+        return {
+            "sat_id_a": sat_id_a,
+            "sat_id_b": sat_id_b,
+            "duration_hours": duration_hours,
+            "threshold_km": threshold_km,
+            "closest_approach_km": round(min_dist, 3),
+            "closest_approach_time": min_time.isoformat(),
+            "events": events,
+        }
+
+    # ── Feature: Sky pass track (azimuth/elevation for polar plot) ─
+    async def get_pass_track(
+        self,
+        satellite_id: int,
+        observer_lat: float,
+        observer_lon: float,
+        start: datetime | None = None,
+        duration_minutes: int = 1440,
+        step_seconds: int = 10,
+    ) -> dict | None:
+        """Return azimuth/elevation track of the next pass for sky plot rendering."""
+        satellite, tle = await self._get_satellite_and_tle(satellite_id)
+        sat = Satrec.twoline2rv(tle.line1, tle.line2)
+
+        if start is None:
+            start = datetime.now(timezone.utc)
+
+        obs_lat_rad = math.radians(observer_lat)
+        obs_lon_rad = math.radians(observer_lon)
+        obs_r = EARTH_RADIUS_KM
+        ox = obs_r * math.cos(obs_lat_rad) * math.cos(obs_lon_rad)
+        oy = obs_r * math.cos(obs_lat_rad) * math.sin(obs_lon_rad)
+        oz = obs_r * math.sin(obs_lat_rad)
+
+        # Local coordinate frame at observer
+        # Up: radial
+        ux, uy, uz = (
+            math.cos(obs_lat_rad) * math.cos(obs_lon_rad),
+            math.cos(obs_lat_rad) * math.sin(obs_lon_rad),
+            math.sin(obs_lat_rad),
+        )
+        # East: -sin(lon), cos(lon), 0
+        ex, ey, ez = -math.sin(obs_lon_rad), math.cos(obs_lon_rad), 0.0
+        # North: up × east (cross product)
+        nx = uy * ez - uz * ey
+        ny = uz * ex - ux * ez
+        nz = ux * ey - uy * ex
+
+        rise_time = None
+        track_points = []
+
+        steps = int(duration_minutes * 60 / step_seconds)
+        for i in range(steps):
+            t = start + timedelta(seconds=i * step_seconds)
+            jd, fr = _jday_from_datetime(t)
+            e, r, _ = sat.sgp4(jd, fr)
+            if e != 0:
+                continue
+
+            gmst_rad = _gmst(t)
+            sx, sy, sz = _eci_to_ecef(r, gmst_rad)
+
+            # Range vector
+            rx, ry, rz = sx - ox, sy - oy, sz - oz
+            rng = math.sqrt(rx * rx + ry * ry + rz * rz)
+            if rng == 0:
+                continue
+
+            # Project onto local frame
+            r_up = rx * ux + ry * uy + rz * uz
+            r_east = rx * ex + ry * ey + rz * ez
+            r_north = rx * nx + ry * ny + rz * nz
+
+            elevation = math.degrees(math.asin(max(-1, min(1, r_up / rng))))
+            azimuth = math.degrees(math.atan2(r_east, r_north)) % 360
+
+            if elevation > 0 and rise_time is None:
+                rise_time = t
+
+            if rise_time is not None:
+                track_points.append({
+                    "time": t.isoformat(),
+                    "azimuth": round(azimuth, 2),
+                    "elevation": round(elevation, 2),
+                })
+                if elevation <= 0 and len(track_points) > 1:
+                    break
+
+        if not track_points:
+            return None
+
+        max_el = max(p["elevation"] for p in track_points)
+        return {
+            "satellite_id": satellite.id,
+            "norad_id": satellite.norad_id,
+            "name": satellite.name,
+            "observer_lat": observer_lat,
+            "observer_lon": observer_lon,
+            "rise_time": track_points[0]["time"],
+            "set_time": track_points[-1]["time"],
+            "max_elevation": max_el,
+            "track": track_points,
+        }
+
+    # ── Feature: Orbital decay estimation ──────────────────────────
+    async def estimate_orbital_decay(
+        self,
+        satellite_id: int,
+    ) -> dict:
+        """Estimate remaining orbital lifetime using simplified drag model.
+
+        Uses the ballistic coefficient from TLE first derivative of mean motion
+        (ndot/2) to estimate when the orbit will decay below ~150 km altitude.
+        """
+        satellite, tle = await self._get_satellite_and_tle(satellite_id)
+
+        # Parse ndot/2 from line1 (columns 34-43)
+        # Format: ±.XXXXXXXX (implied decimal)
+        line1 = tle.line1
+        try:
+            ndot_str = line1[33:43].strip()
+            ndot = float(ndot_str)  # rev/day^2 (half of actual)
+        except (ValueError, IndexError):
+            ndot = 0.0
+
+        # Parse BSTAR drag term from line1 (columns 54-61)
+        try:
+            bstar_mantissa = line1[53:59].strip()
+            bstar_exp = line1[59:61].strip()
+            bstar = float(f"0.{bstar_mantissa}e{bstar_exp}")
+        except (ValueError, IndexError):
+            bstar = 0.0
+
+        mean_motion = tle.mean_motion or 15.0
+        semi_major_axis = tle.semi_major_axis or 6771.0
+        altitude_km = semi_major_axis - EARTH_RADIUS_KM
+
+        # Simplified Lifetime estimation
+        # If ndot > 0, the orbit is decaying
+        if ndot > 0 and mean_motion > 0:
+            # Time for mean_motion to reach ~16.4 rev/day (≈ 150 km altitude)
+            terminal_mm = 16.4  # rev/day at ~150 km LEO
+            if mean_motion < terminal_mm:
+                remaining_revs_per_day = terminal_mm - mean_motion
+                # ndot is rev/day^2 (half value), so actual rate = 2 * ndot
+                actual_ndot = 2.0 * ndot
+                if actual_ndot > 1e-12:
+                    days_to_decay = remaining_revs_per_day / actual_ndot
+                else:
+                    days_to_decay = -1  # effectively infinite
+            else:
+                days_to_decay = 30  # already very low
+        else:
+            days_to_decay = -1  # stable or insufficient data
+
+        # Classify risk level
+        if days_to_decay < 0:
+            risk = "stable"
+        elif days_to_decay < 365:
+            risk = "high"
+        elif days_to_decay < 3650:
+            risk = "medium"
+        else:
+            risk = "low"
+
+        return {
+            "satellite_id": satellite.id,
+            "norad_id": satellite.norad_id,
+            "name": satellite.name,
+            "altitude_km": round(altitude_km, 2),
+            "mean_motion": round(mean_motion, 6),
+            "ndot": ndot,
+            "bstar": bstar,
+            "estimated_days_to_decay": round(days_to_decay, 1) if days_to_decay > 0 else None,
+            "risk_level": risk,
+        }

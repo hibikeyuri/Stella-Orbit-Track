@@ -20,6 +20,9 @@ const Tle = lazy(() => import("./pages/Tle.jsx"));
 const Tles = lazy(() => import("./pages/Tles.jsx"));
 const Users = lazy(() => import("./pages/Users.jsx"));
 const Account = lazy(() => import("./pages/Account.jsx"));
+const Tracker = lazy(() => import("./pages/Tracker.jsx"));
+const SkyPlotPage = lazy(() => import("./pages/SkyPlotPage.jsx"));
+const Compare = lazy(() => import("./pages/Compare.jsx"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,6 +55,9 @@ function App() {
                 <Route path="Satellites" element={<Satellites></Satellites>} />
                 <Route path="TLEs" element={<Tles></Tles>} />
                 <Route path="TLEs/:satellite_id" element={<Tle></Tle>} />
+                <Route path="tracker" element={<Tracker />} />
+                <Route path="sky-plot" element={<SkyPlotPage />} />
+                <Route path="compare" element={<Compare />} />
                 <Route path="Users" element={<Users></Users>} />
                 <Route path="Settings" element={<Settings></Settings>} />
                 <Route path="account" element={<Account></Account>}></Route>

@@ -5,6 +5,9 @@ import {
   Users,
   Settings,
   Antenna,
+  Globe,
+  Radar,
+  GitCompareArrows,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
@@ -24,6 +27,9 @@ function MainNav() {
     { to: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
     { to: "/satellites", icon: <SatelliteDish />, label: "Satellites" },
     { to: "/tles", icon: <Antenna />, label: "Tles" },
+    { to: "/tracker", icon: <Globe />, label: "Live Tracker" },
+    { to: "/sky-plot", icon: <Radar />, label: "Sky Plot" },
+    { to: "/compare", icon: <GitCompareArrows />, label: "Compare" },
     { to: "/users", icon: <Users />, label: "Users" },
     { to: "/settings", icon: <Settings />, label: "Settings" },
   ];
