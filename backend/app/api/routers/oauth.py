@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import RedirectResponse
 
 from app.api.dependencies import OauthServiceDep
-from app.config import github_settings, google_settings
+from app.config import app_settings, github_settings, google_settings
 
 router = APIRouter(prefix="/oauth", tags=["Oauth"])
 
@@ -50,9 +50,4 @@ async def oauth_callback(
     service: OauthServiceDep,
 ):
     token = await service.login(provider, code)
-    FRONTEND_URL = "http://localhost:5174"
-    return RedirectResponse(url=f"{FRONTEND_URL}/oauth/callback?token={token}")
-    # return {
-    #     "access_token": token,
-    #     "token_type": "bearer",
-    # }
+    return RedirectResponse(url=f"{app_settings.FRONTEND_URL}/oauth/callback?token={token}")

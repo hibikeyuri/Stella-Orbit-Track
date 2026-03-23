@@ -1,5 +1,4 @@
 import asyncio
-import logging
 from datetime import datetime, timezone
 
 import httpx
@@ -7,12 +6,13 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import celestrak_settings
+from app.core.logging import get_logger
 from app.database.models import TLE, Satellite
 from app.database.session import engine
 from app.schemas import TLECreate
 from app.services.tle import TLEService
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def _parse_norad_id(line1: str) -> int | None:

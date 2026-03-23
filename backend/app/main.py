@@ -1,4 +1,3 @@
-import logging
 import time
 from contextlib import asynccontextmanager
 
@@ -10,21 +9,14 @@ from scalar_fastapi import get_scalar_api_reference
 
 from app.api.router import master_router
 from app.config import app_settings
+from app.core.logging import get_logger, setup_logging
+from app.database.redis import close_redis
 from app.database.session import create_db_tables
 from app.worker.tasks import start_scheduler, stop_scheduler
 
 # ── Structured logging ───────────────────────────────────────────────
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s  %(levelname)-8s  %(name)s  %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-# Silence noisy third-party loggers
-logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
-logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.getLogger("httpcore").setLevel(logging.WARNING)
-
-logger = logging.getLogger(__name__)
+setup_logging()
+logger = get_logger(__name__)
 
 # Dev-friendly regex: always allow localhost / 127.0.0.1 (any port)
 # and Cloudflare quick-tunnel subdomains.
@@ -40,6 +32,7 @@ async def lifespan_handler(app: FastAPI):
     await start_scheduler(app)
     yield
     await stop_scheduler(app)
+    await close_redis()
 
 
 app = FastAPI(lifespan=lifespan_handler)

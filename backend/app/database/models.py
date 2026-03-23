@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from enum import Enum
 from uuid import UUID, uuid4
 
 from pydantic import EmailStr
@@ -70,14 +69,6 @@ class TLE(SQLModel, table=True):
 #     tle: TLE | None = Relationship(back_populates="propagate_caches")
 
 
-class SatelliteStatus(str, Enum):
-    placed = "placed"
-    in_transit = "in_transit"
-    out_for_delivery = "out_for_delivery"
-    delivered = "delivered"
-    cancelled = "cancelled"
-
-
 class User(SQLModel, table=True):
     __tablename__ = "user"
 
@@ -113,8 +104,10 @@ class Setting(SQLModel, table=True):
     created_at: datetime | None = Field(
         default_factory=lambda: datetime.now(timezone.utc), description="build time"
     )
-    minLength: int | None = Field(default=None, description="min length")
-    maxLength: int | None = Field(default=None, description="max length")
-    maxPayload: float | None = Field(default=None, description="max payload")
-    minPayload: int | None = Field(default=None, description="min payload")
-    price: float | None = Field(default=None, description="price")
+    default_propagation_minutes: int | None = Field(default=90, description="default propagation duration in minutes")
+    default_ground_track_minutes: int | None = Field(default=90, description="default ground track duration")
+    conjunction_threshold_km: float | None = Field(default=50.0, description="conjunction warning threshold in km")
+    flyover_min_elevation: float | None = Field(default=10.0, description="minimum elevation for flyover in degrees")
+    celestrak_sync_interval: int | None = Field(default=3600, description="celestrak sync interval in seconds")
+    tle_refresh_interval: int | None = Field(default=900, description="TLE refresh interval in seconds")
+    map_default_zoom: int | None = Field(default=3, description="default map zoom level")

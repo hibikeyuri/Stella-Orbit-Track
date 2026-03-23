@@ -18,6 +18,8 @@ class AppSettings(BaseSettings):
     APP_DOMAIN: str = "localhost:8000"
     APP_PROTOCOL: str = "http"
 
+    FRONTEND_URL: str = "http://localhost:5174"
+
     CORS_ALLOWED_ORIGINS: str = ""
 
     DATABASE_URL: str = "sqlite+aiosqlite:///sqlite.db"

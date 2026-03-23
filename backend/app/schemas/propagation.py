@@ -1,71 +1,9 @@
 from datetime import datetime
-from typing import Dict, Generic, TypeVar
-from uuid import UUID
+from typing import Dict
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, Field
 
-from .utils import utc_now
-
-T = TypeVar("T")
-
-
-class SatelliteBase(BaseModel):
-    name: str | None = None
-    date: datetime | None = None
-    category: str | None = None
-    line1: str | None = None
-    line2: str | None = None
-    norad_id: int | None = None
-    is_active: bool | None = True
-    img: str | None = None
-
-
-class SatelliteCreate(SatelliteBase):
-    pass
-
-
-class SatelliteRead(SatelliteBase):
-    id: int
-    created_at: datetime | None = Field(default_factory=utc_now)
-
-    class Config:
-        orm_mode = True
-
-
-class SatelliteUpdate(SatelliteBase):
-    pass
-
-
-class TLEBase(BaseModel):
-    name: str | None = None
-    line1: str | None = None
-    line2: str | None = None
-    inclination: float | None = None
-    eccentricity: float | None = None
-    semi_major_axis: float | None = None
-    period: float | None = None
-    raan: float | None = None
-    argument_of_perigee: float | None = None
-    mean_anomaly: float | None = None
-    mean_motion: float | None = None
-    age_days: float | None = None
-
-
-class TLECreate(TLEBase):
-    satellite_id: int | None = None
-
-
-class TLERead(TLEBase):
-    id: int
-    satellite_id: int | None = None
-    created_at: datetime | None = Field(default_factory=utc_now)
-
-    class Config:
-        orm_mode = True
-
-
-class TLEUpdate(TLEBase):
-    pass
+from ..utils import utc_now
 
 
 class PropagateCacheBase(BaseModel):
@@ -83,71 +21,14 @@ class PropagateCacheCreate(PropagateCacheBase):
 
 
 class PropagateCacheRead(PropagateCacheBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     tle_id: int | None = None
     created_at: datetime | None = Field(default_factory=utc_now)
 
-    class Config:
-        orm_mode = True
-
 
 class PropagateCacheUpdate(PropagateCacheBase):
-    pass
-
-
-class UserBase(BaseModel):
-    fullName: str | None = None
-    email: EmailStr | None = None
-    avatar_url: str | None = None
-    nationalID: str | None = None
-    nationality: str | None = None
-    countryFlag: str | None = None
-    address: str | None = None
-    zip_code: int | None = None
-
-    mfa_enabled: bool | None = None
-
-    provider: str | None = None
-    provider_user_id: str | None = None
-
-
-class UserCreate(UserBase):
-    password: str
-
-
-class UserRead(UserBase):
-    id: UUID
-    created_at: datetime | None = Field(default_factory=utc_now)
-
-    class Config:
-        orm_mode = True
-
-
-class UserUpdate(UserBase):
-    password: str | None = None
-
-
-class SettingBase(BaseModel):
-    minLength: int | None = None
-    maxLength: int | None = None
-    maxPayload: float | None = None
-    minPayload: int | None = None
-    price: float | None = None
-
-
-class SettingCreate(SettingBase):
-    pass
-
-
-class SettingRead(SettingBase):
-    id: int
-    created_at: datetime | None = Field(default_factory=utc_now)
-
-    class Config:
-        orm_mode = True
-
-
-class SettingUpdate(SettingBase):
     pass
 
 
@@ -217,14 +98,6 @@ class GroundTrackData(BaseModel):
 class GroundTrackResponse(BaseModel):
     data: GroundTrackData | None = None
     error: ErrorResponse | None = None
-
-
-class PaginatedResponse(BaseModel, Generic[T]):
-    data: list[T]
-    total: int
-    page: int
-    page_size: int
-    total_pages: int
 
 
 # ── Multi-satellite batch position ─────────────────────────────

@@ -1,8 +1,11 @@
 import io
+import uuid
+from pathlib import Path
 from typing import Annotated
 
 import qrcode
-from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response, UploadFile, status
+from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.templating import Jinja2Templates
 from pydantic import EmailStr
@@ -14,11 +17,20 @@ from app.api.dependencies import (
     get_access_token,
 )
 from app.config import app_settings
+from app.core.logging import get_logger
 from app.core.security import oauth2_scheme
 from app.database.redis import add_jti_to_blacklist
 from app.utils import TEMPLATE_DIR
 
 from ...schemas import UserCreate, UserRead, UserUpdate
+
+logger = get_logger(__name__)
+
+UPLOAD_DIR = Path(__file__).resolve().parent.parent.parent / "uploads" / "avatars"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+MAX_AVATAR_BYTES = 5 * 1024 * 1024  # 5 MB
 
 router = APIRouter(prefix="/user", tags=["User"])
 templates = Jinja2Templates(TEMPLATE_DIR)
@@ -192,17 +204,59 @@ async def update_user_profile(
     return await service.update_user(user, data)
 
 
-### test oauth2 bearer function
-@router.post("/test")
-async def get_test(token: Annotated[str, Depends(oauth2_scheme)]):
-    return await get_access_token(token)
+### Upload avatar
+@router.post("/me/avatar")
+async def upload_avatar(
+    file: UploadFile,
+    user: UserDep,
+    service: UserServiceDep,
+):
+    if file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(status_code=400, detail="Only JPEG/PNG/WebP/GIF allowed")
+
+    contents = await file.read()
+    if len(contents) > MAX_AVATAR_BYTES:
+        raise HTTPException(status_code=400, detail="Avatar must be under 5 MB")
+
+    ext = file.filename.rsplit(".", 1)[-1] if "." in (file.filename or "") else "jpg"
+    filename = f"{user.id}.{ext}"
+    (UPLOAD_DIR / filename).write_bytes(contents)
+
+    avatar_url = f"{app_settings.base_url}/user/avatar/{filename}"
+    user.avatar_url = avatar_url
+    updated = await service.update_user(user, UserUpdate())
+    return {"avatar_url": updated.avatar_url}
+
+
+### Serve avatar
+@router.get("/avatar/{filename}")
+async def serve_avatar(filename: str):
+    safe_name = Path(filename).name  # prevent directory traversal
+    filepath = UPLOAD_DIR / safe_name
+    if not filepath.exists():
+        raise HTTPException(status_code=404, detail="Avatar not found")
+
+    suffix = filepath.suffix.lower()
+    media_map = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".gif": "image/gif"}
+    media_type = media_map.get(suffix, "application/octet-stream")
+    return Response(content=filepath.read_bytes(), media_type=media_type)
 
 
 ### Verify User Email
 @router.get("/verify")
 async def verify_user_email(token: str, service: UserServiceDep):
-    await service.verify_email(token)
-    return {"detail": "Account verified"}
+    try:
+        await service.verify_email(token)
+        # Redirect to frontend with success status
+        return RedirectResponse(
+            url=f"{app_settings.FRONTEND_URL}/login?verified=true",
+            status_code=302,
+        )
+    except HTTPException:
+        return RedirectResponse(
+            url=f"{app_settings.FRONTEND_URL}/login?verified=false",
+            status_code=302,
+        )
 
 
 ### Email Password Reset Link
