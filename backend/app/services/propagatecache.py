@@ -10,7 +10,87 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.models import TLE, Satellite
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+
+EARTH_RADIUS_KM = 6371.0
+
+
+def _jday_from_datetime(dt: datetime) -> tuple[float, float]:
+    return jday(
+        dt.year, dt.month, dt.day,
+        dt.hour, dt.minute,
+        dt.second + dt.microsecond / 1e6,
+    )
+
+
+def _gmst(dt: datetime) -> float:
+    """Calculate Greenwich Mean Sidereal Time in radians."""
+    jd, fr = _jday_from_datetime(dt)
+    d = jd + fr - 2451545.0
+    t = d / 36525.0
+    gmst_deg = (
+        280.46061837
+        + 360.98564736629 * d
+        + 0.000387933 * t * t
+        - t * t * t / 38710000.0
+    ) % 360
+    return math.radians(gmst_deg)
+
+
+def _eci_to_ecef(r, gmst_rad: float) -> tuple[float, float, float]:
+    """Rotate ECI (TEME) position vector to ECEF using GMST."""
+    x, y, z = r
+    cos_g = math.cos(gmst_rad)
+    sin_g = math.sin(gmst_rad)
+    x_ecef = x * cos_g + y * sin_g
+    y_ecef = -x * sin_g + y * cos_g
+    z_ecef = z
+    return x_ecef, y_ecef, z_ecef
+
+
+def _ecef_to_geodetic(x, y, z) -> dict:
+    """Convert ECEF coordinates to geodetic lat/lon/alt."""
+    lon = math.atan2(y, x)
+    hyp = math.sqrt(x * x + y * y)
+    lat = math.atan2(z, hyp)
+    alt = math.sqrt(x * x + y * y + z * z) - EARTH_RADIUS_KM
+    return {
+        "latitude": math.degrees(lat),
+        "longitude": math.degrees(lon),
+        "altitude": alt,
+    }
+
+
+def eci_to_geodetic(r, dt: datetime) -> dict:
+    """Convert ECI position to geodetic, accounting for Earth rotation (GMST)."""
+    gmst_rad = _gmst(dt)
+    x_ecef, y_ecef, z_ecef = _eci_to_ecef(r, gmst_rad)
+    return _ecef_to_geodetic(x_ecef, y_ecef, z_ecef)
+
+
+def _elevation_from_ecef(sat_ecef, observer_lat_rad, observer_lon_rad, observer_alt_km=0.0):
+    """Calculate elevation angle (degrees) of satellite from an observer using ECEF."""
+    obs_r = EARTH_RADIUS_KM + observer_alt_km
+    ox = obs_r * math.cos(observer_lat_rad) * math.cos(observer_lon_rad)
+    oy = obs_r * math.cos(observer_lat_rad) * math.sin(observer_lon_rad)
+    oz = obs_r * math.sin(observer_lat_rad)
+
+    # Range vector from observer to satellite (ECEF)
+    rx = sat_ecef[0] - ox
+    ry = sat_ecef[1] - oy
+    rz = sat_ecef[2] - oz
+    range_mag = math.sqrt(rx * rx + ry * ry + rz * rz)
+    if range_mag == 0:
+        return 90.0
+
+    # Observer up-direction unit vector (radial)
+    ux = math.cos(observer_lat_rad) * math.cos(observer_lon_rad)
+    uy = math.cos(observer_lat_rad) * math.sin(observer_lon_rad)
+    uz = math.sin(observer_lat_rad)
+
+    # Dot product gives cosine of zenith angle
+    cos_zenith = (rx * ux + ry * uy + rz * uz) / range_mag
+    elevation = 90.0 - math.degrees(math.acos(max(-1.0, min(1.0, cos_zenith))))
+    return elevation
 
 
 class PropagationService:
@@ -60,14 +140,7 @@ class PropagationService:
     ):
         sat = await self._get_satrec(satellite_id)
 
-        jd, fr = jday(
-            date.year,
-            date.month,
-            date.day,
-            date.hour,
-            date.minute,
-            date.second + date.microsecond / 1e6,
-        )
+        jd, fr = _jday_from_datetime(date)
 
         error, r, v = sat.sgp4(jd, fr)
         if error != 0:
@@ -77,21 +150,6 @@ class PropagationService:
             )
 
         return r, v
-
-    def eci_to_geodetic(self, r):
-        x, y, z = r
-
-        lon = math.atan2(y, x)
-        hyp = math.sqrt(x * x + y * y)
-        lat = math.atan2(z, hyp)
-
-        alt = math.sqrt(x * x + y * y + z * z) - 6371.0
-
-        return {
-            "latitude": math.degrees(lat),
-            "longitude": math.degrees(lon),
-            "altitude": alt,
-        }
 
     async def get_current_position(
         self,
@@ -103,7 +161,7 @@ class PropagationService:
 
         result = await self.propagate(satellite_id, at)
         r, _ = result
-        geo = self.eci_to_geodetic(r)
+        geo = eci_to_geodetic(r, at)
 
         return {
             "lat": geo["latitude"],
@@ -123,14 +181,7 @@ class PropagationService:
         satellite, tle = await self._get_satellite_and_tle(satellite_id)
         satrec = Satrec.twoline2rv(tle.line1, tle.line2)
 
-        jd, fr = jday(
-            at.year,
-            at.month,
-            at.day,
-            at.hour,
-            at.minute,
-            at.second + at.microsecond / 1e6,
-        )
+        jd, fr = _jday_from_datetime(at)
 
         error, r, v = satrec.sgp4(jd, fr)
         if error != 0:
@@ -139,7 +190,7 @@ class PropagationService:
                 detail=f"SGP4 propagation error: {error}",
             )
 
-        geo = self.eci_to_geodetic(r)
+        geo = eci_to_geodetic(r, at)
 
         return {
             "satellite_id": satellite.id,
@@ -158,6 +209,43 @@ class PropagationService:
             "frame": "TEME",
         }
 
+    async def get_ground_track(
+        self,
+        satellite_id: int,
+        minutes: int = 120,
+        step_seconds: int = 30,
+        at: datetime | None = None,
+    ) -> dict:
+        """Generate a full ground track (lat/lon points) for the given time window."""
+        if at is None:
+            at = datetime.now(timezone.utc)
+
+        satellite, tle = await self._get_satellite_and_tle(satellite_id)
+        satrec = Satrec.twoline2rv(tle.line1, tle.line2)
+
+        points = []
+        steps = int(minutes * 60 / step_seconds)
+        for i in range(steps):
+            t = at + timedelta(seconds=i * step_seconds)
+            jd, fr = _jday_from_datetime(t)
+            e, r, _ = satrec.sgp4(jd, fr)
+            if e != 0:
+                continue
+            geo = eci_to_geodetic(r, t)
+            points.append({
+                "lat": geo["latitude"],
+                "lon": geo["longitude"],
+                "alt": geo["altitude"],
+                "timestamp": t.isoformat(),
+            })
+
+        return {
+            "satellite_id": satellite.id,
+            "norad_id": satellite.norad_id,
+            "name": satellite.name,
+            "points": points,
+        }
+
     async def predict_next_flyover(
         self,
         satellite_id: int,
@@ -173,42 +261,32 @@ class PropagationService:
         if start is None:
             start = datetime.now(timezone.utc)
 
+        obs_lat_rad = math.radians(observer_lat)
+        obs_lon_rad = math.radians(observer_lon)
+
         rise = peak = set_ = None
         max_elev = -90.0
 
         for i in range(int(duration_minutes * 60 / step_seconds)):
             t = start + timedelta(seconds=i * step_seconds)
 
-            jd, fr = jday(
-                t.year, t.month, t.day, t.hour, t.minute, t.second + t.microsecond / 1e6
-            )
+            jd, fr = _jday_from_datetime(t)
 
             e, r, _ = sat.sgp4(jd, fr)
             if e != 0:
                 continue
 
-            x, y, z = r
-            lon_sat = math.atan2(y, x)
-            lat_sat = math.atan2(z, math.sqrt(x * x + y * y))
+            gmst_rad = _gmst(t)
+            sat_ecef = _eci_to_ecef(r, gmst_rad)
 
-            dlon = lon_sat - math.radians(observer_lon)
-            dlat = lat_sat - math.radians(observer_lat)
-
-            elevation = math.degrees(
-                math.asin(
-                    math.sin(lat_sat) * math.sin(math.radians(observer_lat))
-                    + math.cos(lat_sat)
-                    * math.cos(math.radians(observer_lat))
-                    * math.cos(dlon)
-                )
-            )
+            elevation = _elevation_from_ecef(sat_ecef, obs_lat_rad, obs_lon_rad)
 
             if elevation > 0 and rise is None:
                 rise = t
             if elevation > max_elev:
                 max_elev = elevation
                 peak = t
-            if rise and elevation < 0:
+            if rise and elevation <= 0:
                 set_ = t
                 break
 

@@ -13,7 +13,6 @@ from app.schemas import TLECreate
 from app.services.tle import TLEService
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 def _parse_norad_id(line1: str) -> int | None:

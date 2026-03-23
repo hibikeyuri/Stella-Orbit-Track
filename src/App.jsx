@@ -1,23 +1,25 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import AppLayout from "./components/AppLayout.jsx";
 import Heading from "./components/Heading.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import LoginForm from "./features/authentication/LoginForm.jsx";
-import Account from "./pages/Account.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
-import Login from "./pages/Login.jsx";
-import MFA from "./pages/mfa.jsx";
-import OAuthCallback from "./pages/OAuthCallback.jsx";
-import Satellites from "./pages/Satellites.jsx";
-import Settings from "./pages/Settings.jsx";
-import Tle from "./pages/Tle.jsx";
-import Tles from "./pages/Tles.jsx";
-import Users from "./pages/Users.jsx";
+import Spinner from "./components/Spinner.jsx";
 
 import { Toaster } from "@/components/Toaster.jsx";
+
+const Dashboard = lazy(() => import("./pages/Dashboard.jsx"));
+const Login = lazy(() => import("./pages/Login.jsx"));
+const MFA = lazy(() => import("./pages/mfa.jsx"));
+const OAuthCallback = lazy(() => import("./pages/OAuthCallback.jsx"));
+const Satellites = lazy(() => import("./pages/Satellites.jsx"));
+const Settings = lazy(() => import("./pages/Settings.jsx"));
+const Tle = lazy(() => import("./pages/Tle.jsx"));
+const Tles = lazy(() => import("./pages/Tles.jsx"));
+const Users = lazy(() => import("./pages/Users.jsx"));
+const Account = lazy(() => import("./pages/Account.jsx"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,32 +35,37 @@ function App() {
       <ReactQueryDevtools initialIsOpen={false}></ReactQueryDevtools>
       <Toaster>
         <BrowserRouter>
-          <Routes>
-            <Route
-              element={
-                <ProtectedRoute>
-                  <AppLayout></AppLayout>
-                </ProtectedRoute>
-              }
-            >
+          <Suspense fallback={<Spinner />}>
+            <Routes>
               <Route
-                index
-                element={<Navigate replace to="dashboard"></Navigate>}
-              />
-              <Route path="dashboard" element={<Dashboard></Dashboard>} />
-              <Route path="Satellites" element={<Satellites></Satellites>} />
-              <Route path="TLEs" element={<Tles></Tles>} />
-              <Route path="TLEs/:satellite_id" element={<Tle></Tle>} />
-              <Route path="Users" element={<Users></Users>} />
-              <Route path="Settings" element={<Settings></Settings>} />
-              <Route path="account" element={<Account></Account>}></Route>
-            </Route>
+                element={
+                  <ProtectedRoute>
+                    <AppLayout></AppLayout>
+                  </ProtectedRoute>
+                }
+              >
+                <Route
+                  index
+                  element={<Navigate replace to="dashboard"></Navigate>}
+                />
+                <Route path="dashboard" element={<Dashboard></Dashboard>} />
+                <Route path="Satellites" element={<Satellites></Satellites>} />
+                <Route path="TLEs" element={<Tles></Tles>} />
+                <Route path="TLEs/:satellite_id" element={<Tle></Tle>} />
+                <Route path="Users" element={<Users></Users>} />
+                <Route path="Settings" element={<Settings></Settings>} />
+                <Route path="account" element={<Account></Account>}></Route>
+              </Route>
 
-            <Route path="login" element={<Login></Login>} />
-            <Route path="/oauth/callback" element={<OAuthCallback />} />
-            <Route path="mfa" element={<MFA></MFA>}></Route>
-            <Route path="*" element={<Heading>You Go to Wrong Path</Heading>} />
-          </Routes>
+              <Route path="login" element={<Login></Login>} />
+              <Route path="/oauth/callback" element={<OAuthCallback />} />
+              <Route path="mfa" element={<MFA></MFA>}></Route>
+              <Route
+                path="*"
+                element={<Heading>You Go to Wrong Path</Heading>}
+              />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </Toaster>
       {/* <Toaster

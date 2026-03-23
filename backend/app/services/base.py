@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -36,3 +36,21 @@ class BaseService:
 
         result = await self.session.execute(stmt)
         return result.scalars().all()
+
+    async def _list_paginated(self, page: int, page_size: int, **filters):
+        """Return (items, total_count) with offset/limit pagination."""
+        base = select(self.model)
+        for attr, value in filters.items():
+            base = base.where(getattr(self.model, attr) == value)
+
+        # total count
+        count_stmt = select(func.count()).select_from(base.subquery())
+        total = await self.session.scalar(count_stmt) or 0
+
+        # paginated rows
+        offset = (page - 1) * page_size
+        data_stmt = base.offset(offset).limit(page_size)
+        result = await self.session.execute(data_stmt)
+        items = result.scalars().all()
+
+        return items, total

@@ -43,7 +43,8 @@ export async function getSatellites({
 } = {}) {
   const validPageSize = Number(pageSize) > 0 ? Number(pageSize) : 10;
 
-  const satellites = await apiFetch("/satellites");
+  const res = await apiFetch("/satellites?page_size=200");
+  const satellites = res.data;
 
   const filtered = applyFilter(satellites, filter);
   const sorted = applySort(filtered, sortBy);

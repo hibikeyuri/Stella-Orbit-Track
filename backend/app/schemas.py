@@ -1,10 +1,12 @@
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Generic, TypeVar
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
 
 from .utils import utc_now
+
+T = TypeVar("T")
 
 
 class SatelliteBase(BaseModel):
@@ -196,3 +198,30 @@ class FlyoverData(BaseModel):
 class FlyoverResponse(BaseModel):
     data: FlyoverData | None = None
     error: ErrorResponse | None = None
+
+
+class GroundTrackPoint(BaseModel):
+    lat: float
+    lon: float
+    alt: float
+    timestamp: str
+
+
+class GroundTrackData(BaseModel):
+    satellite_id: int
+    norad_id: int | None
+    name: str | None
+    points: list[GroundTrackPoint]
+
+
+class GroundTrackResponse(BaseModel):
+    data: GroundTrackData | None = None
+    error: ErrorResponse | None = None
+
+
+class PaginatedResponse(BaseModel, Generic[T]):
+    data: list[T]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int

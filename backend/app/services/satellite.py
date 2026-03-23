@@ -25,6 +25,9 @@ class SatelliteService(BaseService):
     async def list_all(self):
         return await self._list()
 
+    async def list_paginated(self, page: int, page_size: int):
+        return await self._list_paginated(page, page_size)
+
     async def add(self, satellite_create: SatelliteCreate) -> Satellite:
         satellite = Satellite(
             **satellite_create.model_dump(),

@@ -42,7 +42,8 @@ function applySort(data, sortBy) {
 export async function getTles({ filter, sortBy, page = 1, pageSize = 10 }) {
   const validPageSize = Number(pageSize) > 0 ? Number(pageSize) : 10;
 
-  const tles = await apiFetch("/tle");
+  const res = await apiFetch("/tle?page_size=200");
+  const tles = res.data;
 
   const filtered = applyFilter(tles, filter);
   const sorted = applySort(filtered, sortBy);
@@ -65,7 +66,8 @@ export async function getTles({ filter, sortBy, page = 1, pageSize = 10 }) {
 }
 
 export async function getTle(id) {
-  const list = await apiFetch(`/tle/satellite/${id}`);
+  const res = await apiFetch(`/tle/satellite/${id}?page_size=200`);
+  const list = res.data;
   if (!Array.isArray(list) || list.length === 0) {
     throw new Error("Tle Data Not Found");
   }

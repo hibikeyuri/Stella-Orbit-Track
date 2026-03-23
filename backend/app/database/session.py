@@ -8,8 +8,9 @@ from app.config import app_settings
 
 engine = create_async_engine(
     app_settings.DATABASE_URL,
-    echo=True,
+    echo=False,
     future=True,
+    connect_args={"check_same_thread": False},
 )
 
 

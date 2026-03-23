@@ -12,7 +12,10 @@ import { useTle } from "./useTle";
 
 import Spinner from "@/components/Spinner";
 import { useMoveBack } from "@/hooks/useMoveBack";
-import { getPropagationPosition } from "@/services/apiPropagation";
+import {
+  getPropagationPosition,
+  getGroundTrack,
+} from "@/services/apiPropagation";
 import { Button } from "@/ui/button";
 
 function RecenterMap({ position }) {
@@ -36,6 +39,28 @@ function TleDetail() {
   const [track, setTrack] = useState([]);
   const moveBack = useMoveBack();
 
+  // Load the full ground track once
+  useEffect(() => {
+    if (!tle?.satellite_id) return;
+    let cancelled = false;
+
+    async function loadTrack() {
+      try {
+        const res = await getGroundTrack(tle.satellite_id, 120, 20);
+        if (cancelled || !res?.data?.points) return;
+        setTrack(res.data.points.map((p) => [p.lat, p.lon]));
+      } catch (err) {
+        console.error("Failed to fetch ground track", err);
+      }
+    }
+    loadTrack();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [tle?.satellite_id]);
+
+  // Update real-time position every 5s
   useEffect(() => {
     if (!tle?.satellite_id) return;
     let isActive = true;
@@ -57,7 +82,6 @@ function TleDetail() {
 
         if (!isActive) return;
         setPos(nextPos);
-        setTrack((prev) => [...prev, [nextPos.lat, nextPos.lon]].slice(-360));
       } catch (error) {
         console.error("Failed to fetch propagation position", error);
       }

@@ -2,7 +2,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Query, status
 
-from app.schemas import FlyoverResponse, PropagationPositionResponse
+from app.schemas import FlyoverResponse, GroundTrackResponse, PropagationPositionResponse
 
 from ..dependencies import PropagationServiceDep
 
@@ -40,3 +40,18 @@ async def get_next_flyover(
         )
 
     return FlyoverResponse(data=data)
+
+
+@router.get("/ground-track/{satellite_id}")
+async def get_ground_track(
+    satellite_id: int,
+    service: PropagationServiceDep,
+    minutes: int = Query(120, description="Time window in minutes"),
+    step: int = Query(30, description="Step size in seconds"),
+) -> GroundTrackResponse:
+    data = await service.get_ground_track(
+        satellite_id=satellite_id,
+        minutes=minutes,
+        step_seconds=step,
+    )
+    return GroundTrackResponse(data=data)

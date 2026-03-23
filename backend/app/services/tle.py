@@ -29,6 +29,12 @@ class TLEService(BaseService):
     async def list_all(self):
         return await self._list()
 
+    async def list_paginated(self, page: int, page_size: int):
+        return await self._list_paginated(page, page_size)
+
+    async def list_by_satellite_paginated(self, satellite_id: int, page: int, page_size: int):
+        return await self._list_paginated(page, page_size, satellite_id=satellite_id)
+
     def _parse_line2(self, line2: str) -> dict:
         parts = line2.split()
 
