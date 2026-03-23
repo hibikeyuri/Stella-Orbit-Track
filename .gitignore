@@ -1,6 +1,10 @@
 # Logs
 logs
 *.log
+*.db
+*.sqlite
+*.sqlite3
+*.bak
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -37,6 +41,7 @@ backend/.mypy_cache
 backend/.env
 backend/*.db
 backend/.github/
+backend/app/uploads/
 
 # Environment Variables
 .env
