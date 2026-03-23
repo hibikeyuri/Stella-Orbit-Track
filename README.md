@@ -59,20 +59,20 @@ Full-stack satellite tracking platform. Fetches TLE (Two-Line Element) data from
 
 ### Frontend
 
-| Category              | Technology                                   |
-| --------------------- | -------------------------------------------- |
-| Framework             | React 19                                     |
-| Build                 | Vite 6                                       |
-| Language              | JSX + TypeScript (mixed, TS for IDE support) |
-| Routing               | react-router-dom 7                           |
-| State / Data Fetching | TanStack React Query 5                       |
-| Forms                 | react-hook-form 7                            |
-| Styling               | Tailwind CSS v4                              |
-| UI Components         | shadcn/ui (Radix primitives)                 |
-| Charts                | Recharts                                     |
-| Map                   | Leaflet + react-leaflet                      |
-| Satellite Math        | satellite.js                                 |
-| Icons                 | lucide-react                                 |
+| Category              | Technology                                      |
+| --------------------- | ----------------------------------------------- |
+| Framework             | React 19                                        |
+| Build                 | Vite 6                                          |
+| Language              | JSX + TypeScript (mixed, TS for IDE support)    |
+| Routing               | react-router-dom 7                              |
+| State / Data Fetching | TanStack React Query 5                          |
+| Forms                 | react-hook-form 7                               |
+| Styling               | Tailwind CSS v4                                 |
+| UI Components         | shadcn/ui (Radix primitives)                    |
+| Charts                | Recharts                                        |
+| Map                   | Leaflet + react-leaflet                         |
+| Satellite Math        | satellite.js                                    |
+| Icons                 | lucide-react                                    |
 | Theming               | Dark mode (system-aware) + Reverse:1999 palette |
 
 ---
@@ -801,15 +801,15 @@ flowchart TD
 
 ### Propagation (`/propagation`)
 
-| Method | Path                                   | Description                                |
-| ------ | -------------------------------------- | ------------------------------------------ |
-| GET    | `/propagation/position/{satellite_id}` | SGP4 propagation (ECI + geodetic)          |
-| GET    | `/propagation/flyover/{satellite_id}`  | Predict next flyover pass                  |
-| GET    | `/propagation/ground-track/{satellite_id}` | Ground track points over time window   |
-| GET    | `/propagation/multi-position`          | Batch positions for multiple satellites    |
-| GET    | `/propagation/conjunction`             | Conjunction/proximity analysis (2 sats)    |
-| GET    | `/propagation/sky-pass/{satellite_id}` | Sky pass polar plot data (az/el track)     |
-| GET    | `/propagation/decay/{satellite_id}`    | Orbital decay & lifetime estimation        |
+| Method | Path                                       | Description                             |
+| ------ | ------------------------------------------ | --------------------------------------- |
+| GET    | `/propagation/position/{satellite_id}`     | SGP4 propagation (ECI + geodetic)       |
+| GET    | `/propagation/flyover/{satellite_id}`      | Predict next flyover pass               |
+| GET    | `/propagation/ground-track/{satellite_id}` | Ground track points over time window    |
+| GET    | `/propagation/multi-position`              | Batch positions for multiple satellites |
+| GET    | `/propagation/conjunction`                 | Conjunction/proximity analysis (2 sats) |
+| GET    | `/propagation/sky-pass/{satellite_id}`     | Sky pass polar plot data (az/el track)  |
+| GET    | `/propagation/decay/{satellite_id}`        | Orbital decay & lifetime estimation     |
 
 ### User (`/user`)
 
@@ -955,14 +955,14 @@ source venv/bin/activate
 pytest -v
 ```
 
-| Test File                  | Tests | Coverage Area                                            |
-| -------------------------- | ----- | -------------------------------------------------------- |
-| `test_tle_service.py`      | 13    | TLE parsing, add, upsert, create from satellite, errors |
-| `test_propagation_ext.py`  | 12    | Coordinate transforms, propagation, ground track, decay  |
-| `test_core_and_schemas.py` | 9     | Logging setup, schema validation, Pydantic models        |
-| `test_worker.py`           | 8     | NORAD ID parsing, TLE text parsing, edge cases           |
-| `test_satellite_service.py`| 6     | Satellite CRUD, list, delete                             |
-| `test_propagation.py`      | 1     | Basic SGP4 propagation smoke test                        |
+| Test File                   | Tests | Coverage Area                                           |
+| --------------------------- | ----- | ------------------------------------------------------- |
+| `test_tle_service.py`       | 13    | TLE parsing, add, upsert, create from satellite, errors |
+| `test_propagation_ext.py`   | 12    | Coordinate transforms, propagation, ground track, decay |
+| `test_core_and_schemas.py`  | 9     | Logging setup, schema validation, Pydantic models       |
+| `test_worker.py`            | 8     | NORAD ID parsing, TLE text parsing, edge cases          |
+| `test_satellite_service.py` | 6     | Satellite CRUD, list, delete                            |
+| `test_propagation.py`       | 1     | Basic SGP4 propagation smoke test                       |
 
 Test infrastructure uses `FakeSession` mock (no real DB needed) with shared fixtures in `conftest.py`.
 
