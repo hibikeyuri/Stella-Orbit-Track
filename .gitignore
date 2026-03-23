@@ -46,3 +46,6 @@ backend/app/uploads/
 # Environment Variables
 .env
 backend/requirements-dev.txt
+
+# Project internal docs (not tracked)
+.github/
