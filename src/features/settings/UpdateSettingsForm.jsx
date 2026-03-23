@@ -9,10 +9,60 @@ import Spinner from "@/components/Spinner";
 import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
 
+const FIELDS = [
+  {
+    key: "default_propagation_minutes",
+    label: "Default Propagation (min)",
+    type: "number",
+    min: 1,
+    max: 1440,
+  },
+  {
+    key: "default_ground_track_minutes",
+    label: "Ground Track Duration (min)",
+    type: "number",
+    min: 1,
+    max: 1440,
+  },
+  {
+    key: "conjunction_threshold_km",
+    label: "Conjunction Threshold (km)",
+    type: "number",
+    min: 0.1,
+    step: 0.1,
+  },
+  {
+    key: "flyover_min_elevation",
+    label: "Flyover Min Elevation (°)",
+    type: "number",
+    min: 0,
+    max: 90,
+  },
+  {
+    key: "celestrak_sync_interval",
+    label: "Celestrak Sync Interval (sec)",
+    type: "number",
+    min: 60,
+  },
+  {
+    key: "tle_refresh_interval",
+    label: "TLE Refresh Interval (sec)",
+    type: "number",
+    min: 60,
+  },
+  {
+    key: "map_default_zoom",
+    label: "Map Default Zoom",
+    type: "number",
+    min: 1,
+    max: 18,
+  },
+];
+
 export function UpdateSettingsForm() {
   const {
     isLoading,
-    settings: { minLength, maxLength, minPayload, maxPayload, Price } = {},
+    settings = {},
   } = useSettings();
   const { isUpdating, updateSetting } = useUpdateSetting();
   const [errors, setErrors] = useState({});
@@ -28,9 +78,7 @@ export function UpdateSettingsForm() {
       return;
     }
 
-    // 清掉錯誤
     setErrors((prev) => ({ ...prev, [field]: null }));
-
     updateSetting({ [field]: Number(value) });
   }
 
@@ -38,95 +86,27 @@ export function UpdateSettingsForm() {
 
   return (
     <Form>
-      {/* minLength */}
-      <FormRow>
-        <Label htmlFor="minLength" className="text-1xl">
-          minLength<span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="minLength"
-          type="number"
-          defaultValue={minLength}
-          disabled={isUpdating}
-          aria-invalid={!!errors.minLength}
-          onChange={(e) => handleUpdate(e, "minLength")}
-        />
-        {errors.minLength && (
-          <p className="text-destructive text-sm">{errors.minLength}</p>
-        )}
-      </FormRow>
-
-      {/* maxLength */}
-      <FormRow>
-        <Label htmlFor="maxLength" className="text-1xl">
-          maxLength<span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="maxLength"
-          type="number"
-          defaultValue={maxLength}
-          disabled={isUpdating}
-          aria-invalid={!!errors.maxLength}
-          onChange={(e) => handleUpdate(e, "maxLength")}
-        />
-        {errors.maxLength && (
-          <p className="text-destructive text-sm">{errors.maxLength}</p>
-        )}
-      </FormRow>
-
-      {/* minPayload */}
-      <FormRow>
-        <Label htmlFor="minPayload" className="text-1xl">
-          minPayload<span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="minPayload"
-          type="number"
-          defaultValue={minPayload}
-          disabled={isUpdating}
-          aria-invalid={!!errors.minPayload}
-          onChange={(e) => handleUpdate(e, "minPayload")}
-        />
-        {errors.minPayload && (
-          <p className="text-destructive text-sm">{errors.minPayload}</p>
-        )}
-      </FormRow>
-
-      {/* maxPayload */}
-      <FormRow>
-        <Label htmlFor="maxPayload" className="text-1xl">
-          maxPayload<span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="maxPayload"
-          type="number"
-          defaultValue={maxPayload}
-          disabled={isUpdating}
-          aria-invalid={!!errors.maxPayload}
-          onChange={(e) => handleUpdate(e, "maxPayload")}
-        />
-        {errors.maxPayload && (
-          <p className="text-destructive text-sm">{errors.maxPayload}</p>
-        )}
-      </FormRow>
-
-      {/* Price */}
-      <FormRow>
-        <Label htmlFor="Price" className="text-1xl">
-          Price<span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="Price"
-          type="number"
-          defaultValue={Price}
-          disabled={isUpdating}
-          aria-invalid={!!errors.Price}
-          onChange={(e) => handleUpdate(e, "Price")}
-        />
-        {errors.Price && (
-          <p className="text-destructive text-sm">{errors.Price}</p>
-        )}
-      </FormRow>
+      {FIELDS.map(({ key, label, type, min, max, step }) => (
+        <FormRow key={key}>
+          <Label htmlFor={key} className="text-sm font-medium">
+            {label}<span className="text-destructive"> *</span>
+          </Label>
+          <Input
+            id={key}
+            type={type}
+            min={min}
+            max={max}
+            step={step}
+            defaultValue={settings[key]}
+            disabled={isUpdating}
+            aria-invalid={!!errors[key]}
+            onChange={(e) => handleUpdate(e, key)}
+          />
+          {errors[key] && (
+            <p className="text-destructive text-sm">{errors[key]}</p>
+          )}
+        </FormRow>
+      ))}
     </Form>
   );
 }

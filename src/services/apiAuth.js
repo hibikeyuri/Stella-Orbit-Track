@@ -51,40 +51,33 @@ export async function logout() {
   localStorage.removeItem("access_token");
 }
 
-export async function updateCurrentUser({ fullName, password, avatar }) {
+export async function updateCurrentUser({ fullName, password }) {
   const body = {};
   if (fullName) body.fullName = fullName;
   if (password) body.password = password;
 
-  const updatedUser = await apiFetch("/user/me", {
+  return await apiFetch("/user/me", {
     method: "PATCH",
     body: JSON.stringify(body),
   });
+}
 
-  if (avatar) {
-    const formData = new FormData();
-    formData.append("file", avatar);
+export async function uploadAvatar(file) {
+  const formData = new FormData();
+  formData.append("file", file);
 
-    const image = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/upload/image`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-        body: formData,
-      },
-    ).then((res) => res.json());
+  const token = localStorage.getItem("access_token");
+  const res = await fetch(
+    `${import.meta.env.VITE_API_BASE_URL}/user/me/avatar`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    },
+  );
 
-    const finalUser = await apiFetch("/user/me", {
-      method: "PATCH",
-      body: JSON.stringify({ avatar: image.url }),
-    });
-
-    return finalUser;
-  }
-
-  return updatedUser;
+  if (!res.ok) throw new Error("Avatar upload failed");
+  return res.json();
 }
 
 export async function getOAuthLoginUrl(provider) {

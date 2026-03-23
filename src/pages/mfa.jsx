@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -20,8 +21,7 @@ export default function MFA() {
       queryClient.invalidateQueries(["user"]);
       navigate("/dashboard", { replace: true });
     },
-    onError: (err) => {
-      console.log("Invalid MFA code", err);
+    onError: () => {
       alert("Invalid MFA code");
     },
   });
@@ -33,18 +33,21 @@ export default function MFA() {
 
   if (!tempToken)
     return (
-      <div className="flex h-screen items-center justify-center">
-        <p className="text-lg text-red-500">Missing MFA token</p>
+      <div className="flex h-screen items-center justify-center bg-gray-950">
+        <p className="text-lg text-red-400">Missing MFA token</p>
       </div>
     );
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
-        <h1 className="mb-2 text-center text-2xl font-semibold">
+    <div className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
+      <div className="w-full max-w-md rounded-2xl border border-gray-800 bg-gray-900 p-8 shadow-lg">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand-500/10">
+          <ShieldCheck className="h-7 w-7 text-brand-400" />
+        </div>
+        <h1 className="mb-2 text-center text-2xl font-semibold text-gray-100">
           MFA Verification
         </h1>
-        <p className="mb-6 text-center text-gray-600">
+        <p className="mb-6 text-center text-gray-400">
           Enter the 6-digit code from your authenticator app.
         </p>
 
@@ -56,11 +59,11 @@ export default function MFA() {
             maxLength={6}
             required
             onChange={(e) => setCode(e.target.value)}
-            className="text-lg"
+            className="text-center text-lg tracking-[0.3em]"
           />
 
           <Button type="submit" disabled={isLoading} className="mt-2 w-full">
-            {isLoading ? "Verifying..." : "Verify & Login"}
+            {isLoading ? "Verifying…" : "Verify & Login"}
           </Button>
         </form>
       </div>
