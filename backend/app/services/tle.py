@@ -2,12 +2,22 @@ import math
 from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models import TLE, Satellite
 from app.schemas import TLECreate
 
 from .base import BaseService
+
+EARTH_RADIUS = 6371
+LEO_MAX_SMA = EARTH_RADIUS + 2000   # 8371 km
+MEO_MAX_SMA = EARTH_RADIUS + 35786  # 42157 km
+
+TLE_SORTABLE = {
+    "name", "satellite_id", "inclination", "eccentricity", "semi_major_axis",
+    "period", "raan", "argument_of_perigee", "mean_anomaly", "mean_motion", "created_at",
+}
 
 
 class TLEService(BaseService):
@@ -29,8 +39,36 @@ class TLEService(BaseService):
     async def list_all(self):
         return await self._list()
 
-    async def list_paginated(self, page: int, page_size: int):
-        return await self._list_paginated(page, page_size)
+    async def list_paginated(
+        self,
+        page: int,
+        page_size: int,
+        orbit_type: str | None = None,
+        sort_by: str | None = None,
+        sort_dir: str = "asc",
+    ):
+        safe_sort = sort_by if sort_by in TLE_SORTABLE else None
+        base = select(TLE)
+
+        if orbit_type == "leo":
+            base = base.where(TLE.semi_major_axis < LEO_MAX_SMA)
+        elif orbit_type == "meo":
+            base = base.where(TLE.semi_major_axis >= LEO_MAX_SMA, TLE.semi_major_axis < MEO_MAX_SMA)
+        elif orbit_type == "geo":
+            base = base.where(TLE.semi_major_axis >= MEO_MAX_SMA)
+
+        count_stmt = select(func.count()).select_from(base.subquery())
+        total = await self.session.scalar(count_stmt) or 0
+
+        if safe_sort and hasattr(TLE, safe_sort):
+            col = getattr(TLE, safe_sort)
+            base = base.order_by(col.desc() if sort_dir == "desc" else col.asc())
+
+        offset = (page - 1) * page_size
+        data_stmt = base.offset(offset).limit(page_size)
+        result = await self.session.execute(data_stmt)
+        items = result.scalars().all()
+        return items, total
 
     async def list_by_satellite_paginated(self, satellite_id: int, page: int, page_size: int):
         return await self._list_paginated(page, page_size, satellite_id=satellite_id)

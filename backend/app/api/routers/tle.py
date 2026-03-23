@@ -14,9 +14,14 @@ router = APIRouter(prefix="/tle", tags=["TLE"])
 async def list_tles(
     service: TLEServiceDep,
     page: int = Query(1, ge=1),
-    page_size: int = Query(50, ge=1, le=200),
+    page_size: int = Query(10, ge=1, le=200),
+    orbit_type: str | None = Query(None, description="leo, meo, or geo"),
+    sort_by: str | None = Query(None),
+    sort_dir: str = Query("asc"),
 ):
-    items, total = await service.list_paginated(page, page_size)
+    items, total = await service.list_paginated(
+        page, page_size, orbit_type=orbit_type, sort_by=sort_by, sort_dir=sort_dir,
+    )
     return PaginatedResponse(
         data=items,
         total=total,

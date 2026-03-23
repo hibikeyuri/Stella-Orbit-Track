@@ -15,7 +15,7 @@ const DashboardFlyovers = lazy(
 );
 
 export default function Dashboard() {
-  const { satellites, isLoading } = useDashboardSatellites();
+  const { satellites, stats, isLoading } = useDashboardSatellites();
 
   if (isLoading) return <Spinner />;
 
@@ -25,7 +25,7 @@ export default function Dashboard() {
         <Heading as="h1">Dashboard</Heading>
       </Row>
 
-      <DashboardStats satellites={satellites} />
+      <DashboardStats stats={stats} />
 
       <Suspense fallback={<Spinner />}>
         <DashboardCharts satellites={satellites} />

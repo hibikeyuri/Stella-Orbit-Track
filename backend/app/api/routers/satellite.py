@@ -1,5 +1,4 @@
 import math
-from typing import Sequence
 
 from fastapi import APIRouter, HTTPException, Query, status
 
@@ -8,6 +7,11 @@ from app.schemas import PaginatedResponse, SatelliteCreate, SatelliteRead, Satel
 from ..dependencies import SatelliteServiceDep
 
 router = APIRouter(prefix="/satellites", tags=["Satellite"])
+
+
+@router.get("/stats")
+async def get_satellite_stats(service: SatelliteServiceDep):
+    return await service.get_stats()
 
 
 @router.get("/{id}", response_model=SatelliteRead)
@@ -25,9 +29,14 @@ async def get_satellite(id: int, service: SatelliteServiceDep):
 async def list_satellites(
     service: SatelliteServiceDep,
     page: int = Query(1, ge=1),
-    page_size: int = Query(50, ge=1, le=200),
+    page_size: int = Query(10, ge=1, le=200),
+    is_active: bool | None = Query(None),
+    sort_by: str | None = Query(None),
+    sort_dir: str = Query("asc"),
 ):
-    items, total = await service.list_paginated(page, page_size)
+    items, total = await service.list_paginated(
+        page, page_size, is_active=is_active, sort_by=sort_by, sort_dir=sort_dir,
+    )
     return PaginatedResponse(
         data=items,
         total=total,

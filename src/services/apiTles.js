@@ -1,67 +1,27 @@
 import { apiFetch } from "./http";
 
-function applyFilter(data, filter) {
-  if (!filter || filter.value === "all") return data;
-  const field = filter.field;
-  const R_EARTH = 6371;
-  const LEO_MAX = R_EARTH + 2000;
-  const MEO_MAX = R_EARTH + 35786;
-
-  return data.filter((item) => {
-    const value = Number(item?.[field]);
-    if (Number.isNaN(value)) return false;
-    if (filter.value === "leo") return value < LEO_MAX;
-    if (filter.value === "meo") return value >= LEO_MAX && value < MEO_MAX;
-    if (filter.value === "geo") return value >= MEO_MAX;
-    return true;
-  });
-}
-
-function applySort(data, sortBy) {
-  if (!sortBy) return data;
-  const { field, direction } = sortBy;
-
-  return [...data].sort((a, b) => {
-    const aVal = a?.[field];
-    const bVal = b?.[field];
-
-    if (aVal == null && bVal == null) return 0;
-    if (aVal == null) return 1;
-    if (bVal == null) return -1;
-
-    if (typeof aVal === "string" || typeof bVal === "string") {
-      const result = String(aVal).localeCompare(String(bVal));
-      return direction === "asc" ? result : -result;
-    }
-
-    const result = Number(aVal) - Number(bVal);
-    return direction === "asc" ? result : -result;
-  });
-}
-
 export async function getTles({ filter, sortBy, page = 1, pageSize = 10 }) {
-  const validPageSize = Number(pageSize) > 0 ? Number(pageSize) : 10;
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("page_size", String(pageSize));
 
-  const res = await apiFetch("/tle?page_size=200");
-  const tles = res.data;
+  if (filter?.field === "semi_major_axis" && filter?.value && filter.value !== "all") {
+    params.set("orbit_type", filter.value);
+  }
 
-  const filtered = applyFilter(tles, filter);
-  const sorted = applySort(filtered, sortBy);
+  if (sortBy?.field && sortBy?.direction) {
+    params.set("sort_by", sortBy.field);
+    params.set("sort_dir", sortBy.direction);
+  }
 
-  const totalCount = sorted.length;
-  const totalPages = Math.max(1, Math.ceil(totalCount / validPageSize));
-  const suggestedPage = page > 0 && page <= totalPages ? page : totalPages;
-
-  const from = (suggestedPage - 1) * validPageSize;
-  const to = from + validPageSize;
-  const paged = sorted.slice(from, to);
+  const res = await apiFetch(`/tle?${params.toString()}`);
 
   return {
-    tles: paged,
-    count: totalCount,
-    page: suggestedPage,
-    pageSize: validPageSize,
-    totalPages,
+    tles: res.data,
+    count: res.total,
+    page: res.page,
+    pageSize: res.page_size,
+    totalPages: res.total_pages,
   };
 }
 

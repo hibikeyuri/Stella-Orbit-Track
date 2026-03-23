@@ -37,15 +37,21 @@ class BaseService:
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
-    async def _list_paginated(self, page: int, page_size: int, **filters):
-        """Return (items, total_count) with offset/limit pagination."""
+    async def _list_paginated(self, page: int, page_size: int, sort_by: str | None = None, sort_dir: str = "asc", **filters):
+        """Return (items, total_count) with offset/limit pagination, optional sort and filters."""
         base = select(self.model)
         for attr, value in filters.items():
-            base = base.where(getattr(self.model, attr) == value)
+            if value is not None:
+                base = base.where(getattr(self.model, attr) == value)
 
         # total count
         count_stmt = select(func.count()).select_from(base.subquery())
         total = await self.session.scalar(count_stmt) or 0
+
+        # sort
+        if sort_by and hasattr(self.model, sort_by):
+            col = getattr(self.model, sort_by)
+            base = base.order_by(col.desc() if sort_dir == "desc" else col.asc())
 
         # paginated rows
         offset = (page - 1) * page_size

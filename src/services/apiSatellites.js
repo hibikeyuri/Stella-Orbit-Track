@@ -1,68 +1,33 @@
 import { apiFetch } from "./http";
 
-function applyFilter(data, filter) {
-  if (!filter || filter.value === "all") return data;
-  const field = filter.field;
-
-  return data.filter((item) => {
-    if (field === "is_active") {
-      if (filter.value === "active") return item.is_active === true;
-      if (filter.value === "non-active") return item.is_active === false;
-    }
-    return true;
-  });
-}
-
-function applySort(data, sortBy) {
-  if (!sortBy) return data;
-  const { field, direction } = sortBy;
-
-  return [...data].sort((a, b) => {
-    const aVal = a?.[field];
-    const bVal = b?.[field];
-
-    if (aVal == null && bVal == null) return 0;
-    if (aVal == null) return 1;
-    if (bVal == null) return -1;
-
-    if (typeof aVal === "string" || typeof bVal === "string") {
-      const result = String(aVal).localeCompare(String(bVal));
-      return direction === "asc" ? result : -result;
-    }
-
-    const result = Number(aVal) - Number(bVal);
-    return direction === "asc" ? result : -result;
-  });
-}
-
 export async function getSatellites({
   filter,
   sortBy,
   page = 1,
   pageSize = 10,
 } = {}) {
-  const validPageSize = Number(pageSize) > 0 ? Number(pageSize) : 10;
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("page_size", String(pageSize));
 
-  const res = await apiFetch("/satellites?page_size=200");
-  const satellites = res.data;
+  if (filter?.field === "is_active" && filter?.value) {
+    if (filter.value === "active") params.set("is_active", "true");
+    if (filter.value === "non-active") params.set("is_active", "false");
+  }
 
-  const filtered = applyFilter(satellites, filter);
-  const sorted = applySort(filtered, sortBy);
+  if (sortBy?.field && sortBy?.direction) {
+    params.set("sort_by", sortBy.field);
+    params.set("sort_dir", sortBy.direction);
+  }
 
-  const totalCount = sorted.length;
-  const totalPages = Math.max(1, Math.ceil(totalCount / validPageSize));
-  const suggestedPage = page > 0 && page <= totalPages ? page : totalPages;
-
-  const from = (suggestedPage - 1) * validPageSize;
-  const to = from + validPageSize;
-  const paged = sorted.slice(from, to);
+  const res = await apiFetch(`/satellites?${params.toString()}`);
 
   return {
-    satellites: paged,
-    count: totalCount,
-    page: suggestedPage,
-    pageSize: validPageSize,
-    totalPages,
+    satellites: res.data,
+    count: res.total,
+    page: res.page,
+    pageSize: res.page_size,
+    totalPages: res.total_pages,
   };
 }
 
