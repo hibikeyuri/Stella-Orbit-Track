@@ -1,6 +1,24 @@
 # Stella Orbit Track
 
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Full-stack satellite tracking platform. Fetches TLE (Two-Line Element) data from CelesTrak, performs SGP4 orbital propagation, and visualizes satellite positions on an interactive map with real-time updates.
+
+### Highlights
+
+- **Multi-satellite live tracker** — batch position polling on a Leaflet map
+- **Sky plot & orbit comparison** — polar plot passes, side-by-side orbital element comparison
+- **Ground track visualization** — configurable time-window orbit traces
+- **Conjunction analysis** — proximity alerts between any two satellites
+- **Orbital decay estimation** — lifetime prediction from drag parameters
+- **Dark mode** — system-aware toggle with localStorage persistence
+- **Responsive (RWD)** — mobile-first sidebar overlay, adaptive grid layout
+- **Reverse:1999 art-deco theme** — gold/brass brand palette with deep-navy dark mode
 
 ---
 
@@ -12,9 +30,10 @@ Full-stack satellite tracking platform. Fetches TLE (Two-Line Element) data from
 - [Frontend Architecture](#frontend-architecture)
 - [Authentication Flow](#authentication-flow)
 - [TLE Sync and Propagation Pipeline](#tle-sync-and-propagation-pipeline)
-- [Client-Side Pagination Architecture](#client-side-pagination-architecture)
+- [Pagination Architecture](#pagination-architecture)
 - [API Endpoints](#api-endpoints)
 - [Database Schema](#database-schema)
+- [Testing](#testing)
 - [Getting Started](#getting-started)
 - [Project Structure](#project-structure)
 
@@ -35,6 +54,7 @@ Full-stack satellite tracking platform. Fetches TLE (Two-Line Element) data from
 | HTTP Client             | httpx (CelesTrak fetch, OAuth)                   |
 | Orbital Propagation     | sgp4                                             |
 | Scheduler               | Native asyncio tasks                             |
+| Logging                 | Structured logging (stdlib)                      |
 | API Docs                | Scalar UI                                        |
 
 ### Frontend
@@ -52,6 +72,8 @@ Full-stack satellite tracking platform. Fetches TLE (Two-Line Element) data from
 | Charts                | Recharts                                     |
 | Map                   | Leaflet + react-leaflet                      |
 | Satellite Math        | satellite.js                                 |
+| Icons                 | lucide-react                                 |
+| Theming               | Dark mode (system-aware) + Reverse:1999 palette |
 
 ---
 
@@ -179,9 +201,10 @@ flowchart TD
 |                  |  services/oauth/ (GitHub, Google)            |
 +------------------+--------------------------------------------+
 |   Core Layer     |  core/security.py (oauth2_scheme)            |
+|                  |  core/logging.py (structured logging)        |
 |                  |  utils.py (JWT encode/decode, URL tokens)   |
 |                  |  config.py (pydantic-settings)              |
-|                  |  schemas.py (Pydantic DTOs)                 |
+|                  |  schemas/ (Pydantic DTO package)            |
 +------------------+--------------------------------------------+
 |   Database Layer |  database/models.py (SQLModel)              |
 |                  |  database/session.py (async engine)         |
@@ -210,7 +233,7 @@ block-beta
     block:CORE["Core Layer"]
         columns 2
         C["Core"]:1
-        C_FILES["core/security.py, utils.py,\nconfig.py, schemas.py"]:1
+        C_FILES["core/security.py, core/logging.py,\nutils.py, config.py,\nschemas/ (DTO package)"]:1
     end
     block:DBA["Database Layer"]
         columns 2
@@ -297,9 +320,9 @@ App (BrowserRouter)
   +-- QueryClientProvider (React Query, staleTime: 60s)
   +-- Routes
         +-- ProtectedRoute (checks auth via /user/me)
-        |     +-- AppLayout (CSS Grid)
-        |           +-- Header (UserAvatar, HeaderMenu, Logout)
-        |           +-- Sidebar (Logo, MainNav)
+        |     +-- AppLayout (responsive CSS Grid, dark mode)
+        |           +-- Header (UserAvatar, HeaderMenu, DarkModeToggle, Hamburger)
+        |           +-- Sidebar (Logo, MainNav, mobile slide-in overlay)
         |           +-- <Outlet /> (page content)
         |                 +-- Dashboard
         |                 +-- Satellites (SatelliteTable + AddSatellite)
@@ -325,9 +348,9 @@ graph TD
     Routes --> OAC[OAuthCallback]
     Routes --> MFA[MFA verification]
 
-    PR --> AL["AppLayout (CSS Grid)"]
-    AL --> Header["Header\n(UserAvatar, HeaderMenu, Logout)"]
-    AL --> Sidebar["Sidebar\n(Logo, MainNav)"]
+    PR --> AL["AppLayout\n(responsive CSS Grid, dark mode)"]
+    AL --> Header["Header\n(UserAvatar, HeaderMenu,\nDarkModeToggle, Hamburger)"]
+    AL --> Sidebar["Sidebar\n(Logo, MainNav,\nmobile slide-in overlay)"]
     AL --> Outlet["Outlet (page content)"]
 
     Outlet --> Dash[Dashboard]
@@ -695,9 +718,9 @@ sequenceDiagram
 
 ---
 
-## Client-Side Pagination Architecture
+## Pagination Architecture
 
-Both Satellite and TLE tables use the same client-side pagination pattern:
+Both Satellite and TLE tables use a server-side pagination pattern with client-side URL state management:
 
 ```
 URL Search Params
@@ -778,10 +801,15 @@ flowchart TD
 
 ### Propagation (`/propagation`)
 
-| Method | Path                                   | Description                       |
-| ------ | -------------------------------------- | --------------------------------- |
-| GET    | `/propagation/position/{satellite_id}` | SGP4 propagation (ECI + geodetic) |
-| GET    | `/propagation/flyover/{satellite_id}`  | Predict next flyover pass         |
+| Method | Path                                   | Description                                |
+| ------ | -------------------------------------- | ------------------------------------------ |
+| GET    | `/propagation/position/{satellite_id}` | SGP4 propagation (ECI + geodetic)          |
+| GET    | `/propagation/flyover/{satellite_id}`  | Predict next flyover pass                  |
+| GET    | `/propagation/ground-track/{satellite_id}` | Ground track points over time window   |
+| GET    | `/propagation/multi-position`          | Batch positions for multiple satellites    |
+| GET    | `/propagation/conjunction`             | Conjunction/proximity analysis (2 sats)    |
+| GET    | `/propagation/sky-pass/{satellite_id}` | Sky pass polar plot data (az/el track)     |
+| GET    | `/propagation/decay/{satellite_id}`    | Orbital decay & lifetime estimation        |
 
 ### User (`/user`)
 
@@ -791,6 +819,7 @@ flowchart TD
 | POST   | `/user/login`             | Login (returns JWT or MFA challenge) |
 | POST   | `/user/verify_mfa`        | Verify TOTP code                     |
 | GET    | `/user/me`                | Get current user profile             |
+| PATCH  | `/user/me`                | Update profile (username, avatar)    |
 | POST   | `/user/logout`            | Blacklist JWT                        |
 | GET    | `/user/verify`            | Email verification                   |
 | GET    | `/user/send_reset`        | Send password reset email            |
@@ -914,6 +943,31 @@ erDiagram
 
 ---
 
+## Testing
+
+### Backend Tests
+
+51 tests covering all backend layers. Run with:
+
+```bash
+cd backend
+source venv/bin/activate
+pytest -v
+```
+
+| Test File                  | Tests | Coverage Area                                            |
+| -------------------------- | ----- | -------------------------------------------------------- |
+| `test_tle_service.py`      | 13    | TLE parsing, add, upsert, create from satellite, errors |
+| `test_propagation_ext.py`  | 12    | Coordinate transforms, propagation, ground track, decay  |
+| `test_core_and_schemas.py` | 9     | Logging setup, schema validation, Pydantic models        |
+| `test_worker.py`           | 8     | NORAD ID parsing, TLE text parsing, edge cases           |
+| `test_satellite_service.py`| 6     | Satellite CRUD, list, delete                             |
+| `test_propagation.py`      | 1     | Basic SGP4 propagation smoke test                        |
+
+Test infrastructure uses `FakeSession` mock (no real DB needed) with shared fixtures in `conftest.py`.
+
+---
+
 ## Getting Started
 
 ### Prerequisites
@@ -987,13 +1041,21 @@ Stella-Orbit-Track/
 |     |     |     +-- dependencies.py      # DI container
 |     |     |     +-- router.py            # master router
 |     |     |     +-- routers/
-|     |     |           +-- satellite.py
-|     |     |           +-- tle.py
+|     |     |     |     +-- satellite.py
+|     |     |     |     +-- tle.py
+|     |     |     |     +-- propagation.py
+|     |     |     |     +-- user.py
+|     |     |     |     +-- oauth.py
+|     |     |     +-- schemas/             # Pydantic DTO package
+|     |     |           +-- common.py
 |     |     |           +-- propagation.py
+|     |     |           +-- satellite.py
+|     |     |           +-- settings.py
+|     |     |           +-- tle.py
 |     |     |           +-- user.py
-|     |     |           +-- oauth.py
 |     |     +-- core/
 |     |     |     +-- security.py          # OAuth2 scheme
+|     |     |     +-- logging.py           # structured logging
 |     |     +-- database/
 |     |     |     +-- models.py            # SQLModel entities
 |     |     |     +-- session.py           # async engine
@@ -1015,25 +1077,44 @@ Stella-Orbit-Track/
 |     |     +-- worker/
 |     |     |     +-- tasks.py             # async scheduler
 |     |     +-- config.py                  # pydantic-settings
-|     |     +-- schemas.py                 # Pydantic DTOs
+|     |     +-- schemas.py                 # re-exports (backward compat)
 |     |     +-- utils.py                   # JWT, URL-safe tokens
 |     |     +-- main.py                    # FastAPI app
 |     +-- templates/                       # email + MFA HTML
 |     +-- tests/
+|           +-- conftest.py                # FakeSession mock + fixtures
+|           +-- test_tle_service.py
+|           +-- test_satellite_service.py
+|           +-- test_propagation.py
+|           +-- test_propagation_ext.py
+|           +-- test_worker.py
+|           +-- test_core_and_schemas.py
 +-- src/
 |     +-- components/                      # reusable UI components
+|     |     +-- AppLayout.jsx              # responsive grid layout
+|     |     +-- Header.jsx                 # hamburger + dark mode
+|     |     +-- Sidebar.jsx                # mobile slide-in overlay
+|     |     +-- DarkModeToggle.jsx         # sun/moon toggle
+|     |     +-- ...
 |     +-- features/
 |     |     +-- authentication/            # login, signup, OAuth, MFA
 |     |     +-- satellite/                 # CRUD + paginated table
 |     |     +-- tle/                       # paginated table + detail
 |     |     +-- dashboard/                 # charts + satellite cards
 |     |     +-- settings/                  # app settings form
-|     +-- hooks/                           # custom React hooks
+|     +-- hooks/
+|     |     +-- useDarkMode.js             # dark mode state + system pref
+|     |     +-- useSidebar.js              # sidebar context provider
+|     |     +-- usePaginationParam.js      # generic URL pagination
+|     |     +-- useOutsideClick.js
+|     |     +-- useLocalStorageState.js
+|     |     +-- ...
 |     +-- pages/                           # route-level components
 |     +-- services/                        # API client layer
 |     +-- ui/                              # shadcn/ui components
 |     +-- utils/                           # constants, helpers
-|     +-- styles/                          # global CSS
+|     +-- styles/
+|     |     +-- GlobalStyle.css            # Reverse:1999 brand palette
 |     +-- App.jsx                          # router config
 |     +-- main.jsx                         # React entry point
 +-- index.html
