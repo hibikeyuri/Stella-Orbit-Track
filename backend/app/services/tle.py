@@ -1,5 +1,5 @@
 import math
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
@@ -73,14 +73,14 @@ class TLEService(BaseService):
     async def list_by_satellite_paginated(self, satellite_id: int, page: int, page_size: int):
         return await self._list_paginated(page, page_size, satellite_id=satellite_id)
 
-    def _parse_line2(self, line2: str) -> dict:
+    def _parse_line2(self, line2: str, line1: str | None = None) -> dict:
         parts = line2.split()
 
         try:
             inclination = float(parts[2])
             raan = float(parts[3])
             eccentricity = float("0." + parts[4])
-            arg_perigee = float(parts[5])
+            argument_of_perigee = float(parts[5])
             mean_anomaly = float(parts[6])
             mean_motion = float(parts[7])
         except (IndexError, ValueError):
@@ -93,14 +93,29 @@ class TLEService(BaseService):
         period = 86400 / mean_motion
         semi_major_axis = (GM * period**2 / (4 * math.pi**2)) ** (1 / 3)
 
+        # Parse epoch from line1 to compute age_days
+        age_days = None
+        if line1:
+            try:
+                epoch_str = line1[18:32].strip()
+                epoch_year = int(epoch_str[:2])
+                epoch_day = float(epoch_str[2:])
+                year = 2000 + epoch_year if epoch_year < 57 else 1900 + epoch_year
+                epoch_dt = datetime(year, 1, 1, tzinfo=timezone.utc) + timedelta(days=epoch_day - 1)
+                age_days = (datetime.now(timezone.utc) - epoch_dt).total_seconds() / 86400
+            except (ValueError, IndexError):
+                pass
+
         return {
             "inclination": inclination,
             "raan": raan,
             "eccentricity": eccentricity,
-            "arg_perigee": arg_perigee,
+            "argument_of_perigee": argument_of_perigee,
             "mean_anomaly": mean_anomaly,
             "mean_motion": mean_motion,
             "semi_major_axis": semi_major_axis,
+            "period": period,
+            "age_days": age_days,
         }
 
     async def add(self, tle_create: TLECreate) -> TLE:
@@ -116,7 +131,7 @@ class TLEService(BaseService):
                 detail="line1 and line2 are required",
             )
 
-        orbital_params = self._parse_line2(tle_create.line2)
+        orbital_params = self._parse_line2(tle_create.line2, tle_create.line1)
 
         tle = TLE(
             satellite_id=tle_create.satellite_id,
@@ -137,7 +152,7 @@ class TLEService(BaseService):
                 detail="line2 is required for upsert",
             )
 
-        orbital_params = self._parse_line2(sat_data["line2"])
+        orbital_params = self._parse_line2(sat_data["line2"], sat_data.get("line1"))
 
         existing_tle.name = sat_data.get("name")
         existing_tle.line1 = sat_data["line1"]
@@ -167,7 +182,7 @@ class TLEService(BaseService):
                 detail="Satellite line1/line2 not found",
             )
 
-        orbital_params = self._parse_line2(satellite.line2)
+        orbital_params = self._parse_line2(satellite.line2, satellite.line1)
 
         tle = TLE(
             satellite_id=satellite.id,

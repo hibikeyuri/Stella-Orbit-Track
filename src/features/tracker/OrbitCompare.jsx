@@ -14,6 +14,7 @@ import Row from "@/components/Row";
 import Spinner from "@/components/Spinner";
 import { getConjunction, getOrbitalDecay } from "@/services/apiPropagation";
 import { getSatellites } from "@/services/apiSatellites";
+import { getTle } from "@/services/apiTles";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { Label } from "@/ui/label";
@@ -162,6 +163,8 @@ export default function OrbitCompare() {
   const [conjLoading, setConjLoading] = useState(false);
   const [decayA, setDecayA] = useState(null);
   const [decayB, setDecayB] = useState(null);
+  const [tleA, setTleA] = useState(null);
+  const [tleB, setTleB] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -188,9 +191,12 @@ export default function OrbitCompare() {
     };
   }, []);
 
-  // Fetch decay data when selection changes
+  // Fetch TLE + decay data when selection changes
   useEffect(() => {
     if (!satIdA) return;
+    getTle(satIdA)
+      .then((tle) => setTleA(tle))
+      .catch(() => setTleA(null));
     getOrbitalDecay(satIdA)
       .then((res) => setDecayA(res.data))
       .catch(() => setDecayA(null));
@@ -198,6 +204,9 @@ export default function OrbitCompare() {
 
   useEffect(() => {
     if (!satIdB) return;
+    getTle(satIdB)
+      .then((tle) => setTleB(tle))
+      .catch(() => setTleB(null));
     getOrbitalDecay(satIdB)
       .then((res) => setDecayB(res.data))
       .catch(() => setDecayB(null));
@@ -219,6 +228,10 @@ export default function OrbitCompare() {
 
   const satA = sats.find((s) => s.id === satIdA);
   const satB = sats.find((s) => s.id === satIdB);
+
+  // Merge satellite name with TLE orbital data for comparison
+  const dataA = tleA ? { ...tleA, name: satA?.name || tleA.name } : null;
+  const dataB = tleB ? { ...tleB, name: satB?.name || tleB.name } : null;
 
   if (loading) return <Spinner />;
 
@@ -288,63 +301,69 @@ export default function OrbitCompare() {
           <div className="grid gap-4 lg:grid-cols-2">
             {/* Radar chart */}
             <div className="rounded-xl border border-gray-200 bg-slate-950 p-4 shadow-sm">
-              <CompareRadar satA={satA} satB={satB} />
+              <CompareRadar satA={dataA} satB={dataB} />
             </div>
 
             {/* Parameter table */}
             <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
               <div className="mb-3 grid grid-cols-4 gap-2 text-xs font-bold text-gray-400 uppercase">
                 <div>Parameter</div>
-                <div>{satA?.name || "A"}</div>
-                <div>{satB?.name || "B"}</div>
+                <div>{dataA?.name || "A"}</div>
+                <div>{dataB?.name || "B"}</div>
                 <div>Delta</div>
               </div>
               <ParamRow
                 label="Inclination"
-                valA={satA?.inclination}
-                valB={satB?.inclination}
+                valA={dataA?.inclination}
+                valB={dataB?.inclination}
                 unit="°"
               />
               <ParamRow
                 label="Eccentricity"
-                valA={satA?.eccentricity}
-                valB={satB?.eccentricity}
+                valA={dataA?.eccentricity}
+                valB={dataB?.eccentricity}
               />
               <ParamRow
                 label="RAAN"
-                valA={satA?.raan}
-                valB={satB?.raan}
+                valA={dataA?.raan}
+                valB={dataB?.raan}
                 unit="°"
               />
               <ParamRow
                 label="Semi-major Axis"
-                valA={satA?.semi_major_axis}
-                valB={satB?.semi_major_axis}
+                valA={dataA?.semi_major_axis}
+                valB={dataB?.semi_major_axis}
                 unit="km"
               />
               <ParamRow
                 label="Mean Motion"
-                valA={satA?.mean_motion}
-                valB={satB?.mean_motion}
+                valA={dataA?.mean_motion}
+                valB={dataB?.mean_motion}
                 unit="rev/d"
               />
               <ParamRow
                 label="Period"
-                valA={satA?.period}
-                valB={satB?.period}
+                valA={dataA?.period}
+                valB={dataB?.period}
                 unit="s"
               />
               <ParamRow
                 label="Arg of Perigee"
-                valA={satA?.argument_of_perigee}
-                valB={satB?.argument_of_perigee}
+                valA={dataA?.argument_of_perigee}
+                valB={dataB?.argument_of_perigee}
                 unit="°"
               />
               <ParamRow
                 label="Mean Anomaly"
-                valA={satA?.mean_anomaly}
-                valB={satB?.mean_anomaly}
+                valA={dataA?.mean_anomaly}
+                valB={dataB?.mean_anomaly}
                 unit="°"
+              />
+              <ParamRow
+                label="Age"
+                valA={dataA?.age_days}
+                valB={dataB?.age_days}
+                unit="days"
               />
             </div>
           </div>
