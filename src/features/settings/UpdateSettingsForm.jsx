@@ -60,10 +60,7 @@ const FIELDS = [
 ];
 
 export function UpdateSettingsForm() {
-  const {
-    isLoading,
-    settings = {},
-  } = useSettings();
+  const { isLoading, settings = {} } = useSettings();
   const { isUpdating, updateSetting } = useUpdateSetting();
   const [errors, setErrors] = useState({});
 
@@ -89,7 +86,8 @@ export function UpdateSettingsForm() {
       {FIELDS.map(({ key, label, type, min, max, step }) => (
         <FormRow key={key}>
           <Label htmlFor={key} className="text-sm font-medium">
-            {label}<span className="text-destructive"> *</span>
+            {label}
+            <span className="text-destructive"> *</span>
           </Label>
           <Input
             id={key}

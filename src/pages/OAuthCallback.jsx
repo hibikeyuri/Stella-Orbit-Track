@@ -49,13 +49,16 @@ export default function OAuthCallback() {
       {/* Orbit animation */}
       <div className="relative h-32 w-32">
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="h-8 w-8 rounded-full bg-brand-500 shadow-[0_0_20px_rgba(99,102,241,0.6)]" />
+          <div className="bg-brand-500 h-8 w-8 rounded-full shadow-[0_0_20px_rgba(99,102,241,0.6)]" />
         </div>
-        <div className="absolute inset-0 animate-spin" style={{ animationDuration: "3s" }}>
+        <div
+          className="absolute inset-0 animate-spin"
+          style={{ animationDuration: "3s" }}
+        >
           <div className="absolute top-0 left-1/2 h-3 w-3 -translate-x-1/2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)]" />
         </div>
         <div
-          className="absolute inset-2 rounded-full border border-brand-500/30"
+          className="border-brand-500/30 absolute inset-2 rounded-full border"
           style={{ borderStyle: "dashed" }}
         />
       </div>

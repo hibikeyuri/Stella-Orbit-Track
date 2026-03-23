@@ -69,7 +69,7 @@ function Account() {
           <img
             src={user?.avatar_url || "/default-user.jpg"}
             alt="avatar"
-            className="h-16 w-16 rounded-full border-2 border-brand-200 object-cover dark:border-brand-700"
+            className="border-brand-200 dark:border-brand-700 h-16 w-16 rounded-full border-2 object-cover"
           />
           <div>
             <p className="text-lg font-semibold dark:text-gray-100">
@@ -106,7 +106,7 @@ function Account() {
           )}
 
           {user?.mfa_enabled && !mfaData && mfaStatus !== "success" && (
-            <p className="rounded-lg bg-brand-50 p-3 text-sm font-medium text-brand-700 dark:bg-brand-900/20 dark:text-brand-200">
+            <p className="bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-200 rounded-lg p-3 text-sm font-medium">
               MFA is currently enabled on your account.
             </p>
           )}
@@ -122,10 +122,7 @@ function Account() {
                 alt="MFA QR code"
                 className="h-44 w-44 rounded-lg border"
               />
-              <form
-                onSubmit={handleVerifyMfa}
-                className="flex items-end gap-2"
-              >
+              <form onSubmit={handleVerifyMfa} className="flex items-end gap-2">
                 <Input
                   type="text"
                   placeholder="6-digit code"

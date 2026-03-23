@@ -30,7 +30,7 @@ export default function Login() {
   }, [searchParams, toast]);
 
   return (
-    <main className="grid min-h-screen place-content-center gap-6 bg-gray-50 px-4 dark:bg-gray-950 sm:[grid-template-columns:28rem] md:[grid-template-columns:36rem] lg:[grid-template-columns:48rem]">
+    <main className="grid min-h-screen place-content-center gap-6 bg-gray-50 px-4 sm:[grid-template-columns:28rem] md:[grid-template-columns:36rem] lg:[grid-template-columns:48rem] dark:bg-gray-950">
       <Logo />
 
       <div className="rounded-xl bg-white p-8 shadow-sm dark:bg-gray-900">

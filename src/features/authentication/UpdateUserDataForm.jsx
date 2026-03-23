@@ -76,11 +76,9 @@ export default function UpdateUserDataForm() {
         <div className="flex items-center gap-4">
           {(currentAvatar || avatarFile) && (
             <img
-              src={
-                avatarFile ? URL.createObjectURL(avatarFile) : currentAvatar
-              }
+              src={avatarFile ? URL.createObjectURL(avatarFile) : currentAvatar}
               alt="Avatar preview"
-              className="h-14 w-14 rounded-full border-2 border-brand-200 object-cover dark:border-brand-700"
+              className="border-brand-200 dark:border-brand-700 h-14 w-14 rounded-full border-2 object-cover"
             />
           )}
           <Input
